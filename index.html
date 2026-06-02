@@ -1,107 +1,109 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KK Fashion</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Montserrat:wght@300;400&display=swap" rel="stylesheet">
-    
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { background-color: #0a0a0a; font-family: 'Cinzel', serif; color: white; overflow-x: hidden; }
-
-        /* 1. SPLASH SCREEN STYLES */
-        #splash-screen {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100vh;
-            background: radial-gradient(circle, #151515 0%, #050505 100%);
-            display: flex; justify-content: center; align-items: center;
-            z-index: 9999;
-            transition: opacity 0.8s ease, visibility 0.8s;
-        }
-
-        .splash-container { text-align: center; animation: fadeInScale 1.5s ease-out forwards; }
-        
-        .logo-card {
-            width: 280px; height: 280px; border: 2px solid #b3924e; border-radius: 25px;
-            background: linear-gradient(135deg, #111111, #1a1a1a);
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-            position: relative; box-shadow: 0 0 30px rgba(179, 146, 78, 0.2); margin-bottom: 40px;
-        }
-
-        .logo-text-wrapper { position: relative; display: flex; align-items: center; justify-content: center; }
-        
-        .main-logo {
-            font-size: 90px; font-weight: 700; letter-spacing: -5px;
-            background: linear-gradient(to bottom, #ffe596 0%, #b3924e 50%, #876520 100%);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-        }
-
-        .center-line {
-            position: absolute; width: 2px; height: 130px; left: 50%; transform: translateX(-50%);
-            background: linear-gradient(to bottom, transparent, #b3924e, #ffe596, #b3924e, transparent);
-        }
-
-        .brand-sub {
-            font-size: 14px; letter-spacing: 7px; color: #d1b46a; margin-top: 15px;
-            font-family: 'Montserrat', sans-serif; text-transform: uppercase;
-            border-top: 1px solid rgba(179, 146, 78, 0.4); border-bottom: 1px solid rgba(179, 146, 78, 0.4); padding: 5px 15px;
-        }
-
-        .premium-tag {
-            font-size: 16px; color: #b3924e; letter-spacing: 6px; text-transform: uppercase;
-            opacity: 0; animation: textGlowFade 1.5s ease-out 0.5s forwards;
-        }
-
-        /* गायब होने वाली क्लास (JavaScript से लगेगी) */
-        .fade-out { opacity: 0; visibility: hidden; pointer-events: none; }
-
-        @keyframes fadeInScale { 0% { opacity: 0; transform: scale(0.9); } 100% { opacity: 1; transform: scale(1); } }
-        @keyframes textGlowFade { 0% { opacity: 0; } 100% { opacity: 1; text-shadow: 0 0 10px rgba(179, 146, 78, 0.5); } }
-
-
-        /* 2. MAIN WEBSITE CONTENT STYLES */
-        /* एनीमेशन हटने के बाद जो आपकी असली वेबसाइट दिखेगी, उसका कोड यहाँ आएगा */
-        .main-website {
-            padding: 40px 20px;
-            text-align: center;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        .main-website h2 { color: #b3924e; margin-bottom: 20px; font-size: 32px; }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>K_K Fashion — Online Clothing Store</title>
+  <meta name="description" content="Shop t-shirts, shirts, pants and combos online. Easy ordering on WhatsApp." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
 
-    <!-- ये है आपका एनीमेशन जो पहले दिखेगा -->
-    <div id="splash-screen">
-        <div class="splash-container">
-            <div class="logo-card">
-                <div class="logo-text-wrapper">
-                    <div class="center-line"></div>
-                    <h1 class="main-logo">KK</h1>
-                </div>
-                <div class="brand-sub">Fashion</div>
-            </div>
-            <p class="premium-tag">Premium Quality</p>
+  <!-- Splash -->
+  <div id="splash" class="splash">
+    <div class="splash-glow"></div>
+    <div class="splash-oval">
+      <div class="splash-brand">K_K</div>
+      <div class="splash-sub">FASHION</div>
+    </div>
+    <div class="splash-line"></div>
+    <p class="splash-tagline">Premium Quality</p>
+  </div>
+
+  <!-- App -->
+  <div id="app" class="app hidden">
+    <header class="header">
+      <button id="logoBtn" class="logo-btn" aria-label="Store logo">
+        <span class="brand-mark">K_K</span>
+        <span class="brand-name">Fashion</span>
+      </button>
+      <button id="cartBtn" class="icon-btn cart-btn" aria-label="Open cart">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+        <span id="cartCount" class="badge hidden">0</span>
+      </button>
+    </header>
+    <div class="cats-wrap"><div id="cats" class="cats"></div></div>
+    <main class="main">
+      <h2 id="activeTitle" class="section-title">All</h2>
+      <div id="products" class="grid"></div>
+    </main>
+  </div>
+
+  <!-- Cart drawer -->
+  <div id="cartOverlay" class="overlay hidden">
+    <div class="drawer">
+      <div class="drawer-head">
+        <h2>Your Cart</h2>
+        <button id="cartClose" class="icon-btn" aria-label="Close cart">✕</button>
+      </div>
+      <div id="cartItems" class="drawer-body"></div>
+      <div id="cartFooter" class="drawer-foot hidden">
+        <div class="total"><span>Total</span><span id="cartTotal">₹0</span></div>
+        <button id="checkoutBtn" class="btn-primary full">Order on WhatsApp</button>
+        <button id="clearCartBtn" class="link">Clear cart</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Admin PIN -->
+  <div id="adminPin" class="overlay center hidden">
+    <div class="pin-box">
+      <button id="pinClose" class="icon-btn close-abs" aria-label="Close">✕</button>
+      <div class="lock">🔒</div>
+      <h2>Admin Login</h2>
+      <p>Enter PIN to continue</p>
+      <input id="pinInput" type="password" inputmode="numeric" placeholder="••••" class="pin-input" />
+      <div id="pinError" class="error hidden">Wrong PIN</div>
+      <button id="pinUnlock" class="btn-primary full">Unlock</button>
+    </div>
+  </div>
+
+  <!-- Admin Panel -->
+  <div id="adminPanel" class="admin hidden">
+    <div class="admin-inner">
+      <div class="drawer-head">
+        <h2>Admin Panel</h2>
+        <button id="adminClose" class="icon-btn" aria-label="Close admin">✕</button>
+      </div>
+      <section class="card">
+        <h3>Categories</h3>
+        <div id="adminCats" class="chips"></div>
+        <div class="row">
+          <input id="newCat" class="field" placeholder="New category" />
+          <button id="addCatBtn" class="btn-primary">+ Add</button>
         </div>
+      </section>
+      <section class="card">
+        <h3>Add Product</h3>
+        <input id="pName" class="field" placeholder="Product name" />
+        <input id="pImage" class="field" placeholder="Image URL" />
+        <div class="row3">
+          <input id="pPrice" class="field" type="number" placeholder="Price" />
+          <input id="pDiscount" class="field" type="number" placeholder="Discount %" />
+          <input id="pExtra" class="field" type="number" placeholder="Extra ₹" />
+        </div>
+        <select id="pCategory" class="field"></select>
+        <button id="addProductBtn" class="btn-primary full">Add Product</button>
+      </section>
+      <section class="card">
+        <h3 id="adminProdTitle">Products</h3>
+        <div id="adminProducts"></div>
+      </section>
     </div>
+  </div>
 
-    <!-- ये है आपकी असली वेबसाइट का कंटेंट जो एनीमेशन के बाद खुलेगा -->
-    <div class="main-website">
-        <h2>Welcome to KK Fashion Website</h2>
-        <p>यहाँ आप अपनी बाकी वेबसाइट का पूरा कोड (Navbar, Products, Images आदि) डाल सकते हैं।</p>
-    </div>
-
-    <!-- JavaScript: जो 3 सेकंड बाद एनीमेशन को हटा देगी -->
-    <script>
-        window.addEventListener('load', () => {
-            setTimeout(() => {
-                const splash = document.getElementById('splash-screen');
-                splash.classList.add('fade-out'); // एनीमेशन स्क्रीन को छुपा देगा
-            }, 3000); // 3000 मतलब 3 सेकंड का होल्ड
-        });
-    </script>
-
+  <script src="app.js"></script>
 </body>
 </html>
