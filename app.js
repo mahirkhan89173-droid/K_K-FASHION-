@@ -1,5 +1,5 @@
 // ===== Config =====
-const WHATSAPP_NUMBER = "9950701758"; // without country code
+const WHATSAPP_NUMBER = "9950701758";
 const ADMIN_PIN = "8619";
 
 // ===== Default data =====
@@ -11,29 +11,41 @@ const SAMPLE_PRODUCTS = [
   { id: "p4", name: "Shirt + Pant Combo", image: "https://images.unsplash.com/photo-1490114538077-0a7f8cb49891?w=600&q=80", price: 1999, discount: 25, extra: 99, category: "Combos" },
 ];
 
-// ===== State (localStorage) =====
+// ===== State =====
 const load = (k, fb) => { try { const r = localStorage.getItem(k); return r ? JSON.parse(r) : fb; } catch { return fb; } };
 const save = (k, v) => localStorage.setItem(k, JSON.stringify(v));
 
-let categories = load("store_categories", DEFAULT_CATEGORIES);
-let products = load("store_products", SAMPLE_PRODUCTS);
-let cart = load("store_cart", []);
-let activeCat = "All";
+let categories = load("knk_categories", DEFAULT_CATEGORIES);
+let products   = load("knk_products",   SAMPLE_PRODUCTS);
+let cart       = load("knk_cart",       []);
+let activeCat  = "All";
 
 const finalPrice = (p) => Math.round(p.price - (p.price * p.discount) / 100 + p.extra);
 const uid = () => "p" + Date.now() + Math.floor(Math.random() * 1000);
 const $ = (id) => document.getElementById(id);
 
 // ===== Splash =====
-setTimeout(() => { $("splash").classList.add("hidden"); $("app").classList.remove("hidden"); }, 2000);
+window.addEventListener("DOMContentLoaded", () => {
+  setTimeout(() => {
+    const splash = $("splash");
+    splash.style.transition = "opacity 0.5s ease";
+    splash.style.opacity = "0";
+    setTimeout(() => {
+      splash.classList.add("hidden");
+      $("app").classList.remove("hidden");
+    }, 500);
+  }, 2500);
+});
 
 // ===== Categories =====
 function renderCats() {
   const wrap = $("cats"); wrap.innerHTML = "";
-  ["All", ...categories].forEach((c) => {
+  ["All", ...categories].forEach((c, i) => {
     const b = document.createElement("button");
     b.className = "cat" + (c === activeCat ? " active" : "");
     b.textContent = c;
+    b.style.animationDelay = (i * 0.06) + "s";
+    b.style.animation = "fadeUp 0.4s ease both";
     b.onclick = () => { activeCat = c; renderCats(); renderProducts(); };
     wrap.appendChild(b);
   });
@@ -46,10 +58,11 @@ function renderProducts() {
   const list = activeCat === "All" ? products : products.filter((p) => p.category === activeCat);
   if (list.length === 0) { grid.innerHTML = '<p class="empty">No products here yet.</p>'; return; }
   grid.innerHTML = "";
-  list.forEach((p) => {
+  list.forEach((p, i) => {
     const price = finalPrice(p);
     const el = document.createElement("div");
     el.className = "product";
+    el.style.animationDelay = (i * 0.07) + "s";
     el.innerHTML = `
       <img src="${p.image}" alt="${p.name}" loading="lazy" />
       <div class="info">
@@ -76,10 +89,13 @@ function renderProducts() {
 function addToCart(p) {
   const found = cart.find((i) => i.product.id === p.id);
   if (found) found.qty += 1; else cart.push({ product: p, qty: 1 });
-  save("store_cart", cart); renderCartCount(); renderCart();
+  save("knk_cart", cart); renderCartCount(); renderCart();
+  const btn = $("cartBtn");
+  btn.style.color = "#C9A84C";
+  setTimeout(() => { btn.style.color = ""; }, 600);
 }
-function removeFromCart(id) { cart = cart.filter((i) => i.product.id !== id); save("store_cart", cart); renderCartCount(); renderCart(); }
-function clearCart() { cart = []; save("store_cart", cart); renderCartCount(); renderCart(); }
+function removeFromCart(id) { cart = cart.filter((i) => i.product.id !== id); save("knk_cart", cart); renderCartCount(); renderCart(); }
+function clearCart() { cart = []; save("knk_cart", cart); renderCartCount(); renderCart(); }
 function renderCartCount() {
   const count = cart.reduce((s, i) => s + i.qty, 0);
   const badge = $("cartCount"); badge.textContent = count; badge.classList.toggle("hidden", count === 0);
@@ -114,7 +130,7 @@ $("checkoutBtn").onclick = () => {
   window.open(`https://wa.me/91${WHATSAPP_NUMBER}?text=Hello! My order:%0A${lines}%0A%0ATotal: ₹${total}`, "_blank");
 };
 
-// ===== Admin logo 7-tap =====
+// ===== Admin 7-tap =====
 let tapCount = 0, tapTimer = null;
 $("logoBtn").onclick = () => {
   tapCount++; if (tapTimer) clearTimeout(tapTimer);
@@ -129,7 +145,7 @@ $("pinUnlock").onclick = tryUnlock;
 $("pinInput").onkeydown = (e) => { if (e.key === "Enter") tryUnlock(); };
 function tryUnlock() {
   if ($("pinInput").value === ADMIN_PIN) { $("adminPin").classList.add("hidden"); openAdmin(); }
-  else { $("pinError").classList.remove("hidden"); }
+  else { $("pinError").classList.remove("hidden"); $("pinInput").style.borderColor = "#e05555"; setTimeout(() => { $("pinInput").style.borderColor = ""; }, 800); }
 }
 
 // ===== Admin Panel =====
@@ -140,10 +156,7 @@ function renderAdmin() {
   categories.forEach((c) => {
     const el = document.createElement("span"); el.className = "chip";
     el.innerHTML = `${c} <button>🗑️</button>`;
-    el.querySelector("button").onclick = () => {
-      categories = categories.filter((x) => x !== c); save("store_categories", categories);
-      renderCats(); renderProducts(); renderAdmin();
-    };
+    el.querySelector("button").onclick = () => { categories = categories.filter((x) => x !== c); save("knk_categories", categories); renderCats(); renderProducts(); renderAdmin(); };
     chips.appendChild(el);
   });
   const sel = $("pCategory"); sel.innerHTML = "";
@@ -156,33 +169,24 @@ function renderAdmin() {
       <img src="${p.image}" alt="${p.name}" />
       <div class="ap-info"><div class="ap-name">${p.name}</div><div class="ap-sub">${p.category} · ₹${p.price}</div></div>
       <button class="trash">🗑️</button>`;
-    el.querySelector(".trash").onclick = () => {
-      products = products.filter((x) => x.id !== p.id); save("store_products", products);
-      renderProducts(); renderAdmin();
-    };
+    el.querySelector(".trash").onclick = () => { products = products.filter((x) => x.id !== p.id); save("knk_products", products); renderProducts(); renderAdmin(); };
     list.appendChild(el);
   });
 }
 $("addCatBtn").onclick = () => {
   const v = $("newCat").value.trim(); if (!v) return;
   if (!categories.some((x) => x.toLowerCase() === v.toLowerCase())) categories.push(v);
-  save("store_categories", categories); $("newCat").value = "";
+  save("knk_categories", categories); $("newCat").value = "";
   renderCats(); renderProducts(); renderAdmin();
 };
 $("addProductBtn").onclick = () => {
   const name = $("pName").value.trim(); const image = $("pImage").value.trim(); const price = Number($("pPrice").value);
   if (!name || !image || !price) return;
-  products.unshift({
-    id: uid(), name, image, price,
-    discount: Number($("pDiscount").value) || 0,
-    extra: Number($("pExtra").value) || 0,
-    category: $("pCategory").value || categories[0] || "Other",
-  });
-  save("store_products", products);
-  ["pName", "pImage", "pPrice", "pDiscount", "pExtra"].forEach((id) => ($(id).value = ""));
+  products.unshift({ id: uid(), name, image, price, discount: Number($("pDiscount").value) || 0, extra: Number($("pExtra").value) || 0, category: $("pCategory").value || categories[0] || "Other" });
+  save("knk_products", products);
+  ["pName","pImage","pPrice","pDiscount","pExtra"].forEach((id) => ($(id).value = ""));
   renderProducts(); renderAdmin();
 };
 
 // ===== Init =====
 renderCats(); renderProducts(); renderCartCount();
-
