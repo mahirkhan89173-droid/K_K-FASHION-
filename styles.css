@@ -1,39 +1,24 @@
 @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap');
 
 :root {
-  --bg: #0a0a0a;
-  --bg2: #111111;
-  --fg: #f0ece4;
-  --card: #141414;
-  --card2: #1a1a1a;
-  --muted: #666;
-  --muted2: #888;
-  --primary: #C9A84C;
-  --primary-dim: #a8893d;
-  --primary-fg: #0a0a0a;
-  --secondary: #1e1a10;
-  --secondary-fg: #c0b08a;
-  --border: #252525;
-  --border2: #2e2a1f;
-  --destructive: #e05555;
-  --radius: 14px;
-  --font-display: 'Cormorant Garamond', serif;
-  --font-body: 'Inter', system-ui, sans-serif;
+  --bg: #0a0a0a; --bg2: #111111; --fg: #f0ece4; --card: #141414; --card2: #1a1a1a;
+  --muted: #666; --muted2: #888; --primary: #C9A84C; --primary-dim: #a8893d;
+  --primary-fg: #0a0a0a; --secondary: #1e1a10; --secondary-fg: #c0b08a;
+  --border: #252525; --border2: #2e2a1f; --destructive: #e05555; --radius: 14px;
+  --font-display: 'Cormorant Garamond', serif; --font-body: 'Inter', system-ui, sans-serif;
 }
-
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: var(--font-body); background: var(--bg); color: var(--fg); -webkit-font-smoothing: antialiased; }
 .hidden { display: none !important; }
 
 /* SPLASH */
-.splash { position: fixed; inset: 0; z-index: 50; display: flex; flex-direction: column; align-items: center; justify-content: center; background: var(--bg); animation: splashFadeIn 0.5s ease; }
-.splash-glow { position: absolute; width: 300px; height: 300px; border-radius: 50%; background: radial-gradient(circle, rgba(201,168,76,0.12) 0%, transparent 70%); animation: splashGlowPulse 2s ease-in-out infinite; pointer-events: none; }
-.splash-logo-wrap { position: relative; display: flex; align-items: center; justify-content: center; animation: splashLogoReveal 0.8s cubic-bezier(0.16,1,0.3,1) 0.3s both; }
-.splash-ring { position: absolute; inset: -18px; border-radius: 50%; border: 1px solid rgba(201,168,76,0.3); animation: splashRingExpand 1s cubic-bezier(0.16,1,0.3,1) 0.5s both; }
-.splash-brand { font-family: var(--font-display); font-size: 72px; font-weight: 700; letter-spacing: 0.12em; background: linear-gradient(135deg, #e8d08a 0%, #C9A84C 40%, #a87f28 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; line-height: 1; }
-.splash-sub { font-family: var(--font-body); font-size: 13px; font-weight: 600; letter-spacing: 0.5em; color: var(--primary); opacity: 0.85; margin-top: 10px; animation: splashSubReveal 0.8s ease 0.8s both; }
-.splash-line { width: 80px; height: 1px; background: linear-gradient(to right, transparent, var(--primary), transparent); margin-top: 20px; animation: splashLineExpand 0.8s ease 1s both; }
-.splash-tagline { font-family: var(--font-display); font-size: 15px; letter-spacing: 0.2em; color: var(--muted2); margin-top: 12px; animation: splashSubReveal 0.8s ease 1.2s both; }
+.splash { position: fixed; inset: 0; z-index: 50; display: flex; flex-direction: column; align-items: center; justify-content: center; background: var(--bg); gap: 0; animation: splashFadeIn 0.6s ease; }
+.splash-glow { position: absolute; width: 320px; height: 240px; border-radius: 50%; background: radial-gradient(ellipse, rgba(201,168,76,0.14) 0%, transparent 70%); animation: splashGlowPulse 2.5s ease-in-out infinite; pointer-events: none; }
+.splash-oval { position: relative; width: 230px; height: 148px; border: 1.5px solid rgba(201,168,76,0.55); border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; box-shadow: 0 0 35px rgba(201,168,76,0.13), inset 0 0 20px rgba(201,168,76,0.04); animation: splashLogoReveal 0.9s cubic-bezier(0.16,1,0.3,1) 0.3s both; }
+.splash-brand { font-family: var(--font-display); font-size: 60px; font-weight: 700; letter-spacing: 0.1em; background: linear-gradient(160deg, #f0d97a 0%, #C9A84C 45%, #9a7120 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; line-height: 1; }
+.splash-sub { font-family: var(--font-body); font-size: 11px; font-weight: 600; letter-spacing: 0.55em; color: var(--primary); opacity: 0.88; animation: splashSubReveal 0.8s ease 0.9s both; }
+.splash-line { width: 55px; height: 1px; background: linear-gradient(to right, transparent, rgba(201,168,76,0.6), transparent); margin-top: 18px; animation: splashLineExpand 0.8s ease 1.0s both; }
+.splash-tagline { font-family: var(--font-display); font-size: 14px; font-style: italic; letter-spacing: 0.18em; color: var(--muted2); margin-top: 12px; animation: splashSubReveal 0.8s ease 1.2s both; }
 
 /* HEADER */
 .header { position: sticky; top: 0; z-index: 30; display: flex; align-items: center; justify-content: space-between; padding: 12px 18px; background: rgba(10,10,10,0.92); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); animation: slideDown 0.5s ease 0.1s both; }
@@ -131,9 +116,8 @@ body { font-family: var(--font-body); background: var(--bg); color: var(--fg); -
 @keyframes splashFadeIn { from { opacity: 0; } to { opacity: 1; } }
 @keyframes splashGlowPulse { 0%,100% { opacity: 0.5; transform: scale(0.9); } 50% { opacity: 1; transform: scale(1.1); } }
 @keyframes splashLogoReveal { from { opacity: 0; transform: translateY(20px) scale(0.88); filter: blur(8px); } to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); } }
-@keyframes splashRingExpand { from { opacity: 0; transform: scale(0.7); } to { opacity: 1; transform: scale(1); } }
 @keyframes splashSubReveal { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-@keyframes splashLineExpand { from { width: 0; opacity: 0; } to { width: 80px; opacity: 1; } }
+@keyframes splashLineExpand { from { width: 0; opacity: 0; } to { width: 55px; opacity: 1; } }
 @keyframes slideDown { from { opacity: 0; transform: translateY(-12px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes cardFadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
