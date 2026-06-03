@@ -24,7 +24,7 @@ const finalPrice = (p) => Math.round(p.price - (p.price * p.discount) / 100 + p.
 const uid = () => "p" + Date.now() + Math.floor(Math.random() * 1000);
 const $ = (id) => document.getElementById(id);
 
-// ===== Splash (Updated to 4000ms / 4 Seconds) =====
+// ===== Splash =====
 window.addEventListener("DOMContentLoaded", () => {
   setTimeout(() => {
     const splash = $("splash");
@@ -34,7 +34,7 @@ window.addEventListener("DOMContentLoaded", () => {
       splash.classList.add("hidden");
       $("app").classList.remove("hidden");
     }, 500);
-  }, 4000); // 4000 milliseconds = 4 seconds
+  }, 2500);
 });
 
 // ===== Categories =====
