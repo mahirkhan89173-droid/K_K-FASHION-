@@ -2,24 +2,25 @@ const WHATSAPP_NUMBER = "9950701758";
 const ADMIN_PIN = "8619";
 
 const DEFAULT_CATEGORIES = ["Combos", "T-Shirt", "Shirt", "Pant"];
-const SAMPLE_PRODUCTS = [
-  { id: "p1", name: "Classic White T-Shirt", image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=600&q=80", price: 599, discount: 20, extra: 0, category: "T-Shirt" },
-  { id: "p2", name: "Denim Casual Shirt", image: "https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=600&q=80", price: 1299, discount: 15, extra: 49, category: "Shirt" },
-  { id: "p3", name: "Slim Fit Pant", image: "https://images.unsplash.com/photo-1473966968600-fa801b869a1a?w=600&q=80", price: 999, discount: 10, extra: 0, category: "Pant" },
-  { id: "p4", name: "Shirt + Pant Combo", image: "https://images.unsplash.com/photo-1490114538077-0a7f8cb49891?w=600&q=80", price: 1999, discount: 25, extra: 99, category: "Combos" },
-];
 
 const load = (k, fb) => { try { const r = localStorage.getItem(k); return r ? JSON.parse(r) : fb; } catch { return fb; } };
 const save = (k, v) => localStorage.setItem(k, JSON.stringify(v));
 
 let categories = load("knk_categories", DEFAULT_CATEGORIES);
-let products   = load("knk_products",   SAMPLE_PRODUCTS);
+let products   = []; // 🔥 NAYA: Ab data local se nahi, Firebase se aayega!
 let cart       = load("knk_cart",       []);
 let activeCat  = "All";
 
-const finalPrice = (p) => Math.round(p.price - (p.price * p.discount) / 100 + p.extra);
+const finalPrice = (p) => Math.round(p.price - (p.price * p.discount) / 100 + (p.extra || 0));
 const uid = () => "p" + Date.now() + Math.floor(Math.random() * 1000);
 const $ = (id) => document.getElementById(id);
+
+// 🔥 NAYA FUNCTION: HTML wali file Firebase se data lakar isko degi 🔥
+window.updateProductsFromFirebase = function(firebaseProducts) {
+  products = firebaseProducts;
+  renderProducts();
+  if(!$("adminPanel").classList.contains("hidden")) renderAdmin();
+};
 
 window.addEventListener("DOMContentLoaded", () => {
   setTimeout(() => {
@@ -47,7 +48,7 @@ function renderProducts() {
   $("activeTitle").textContent = activeCat;
   const grid = $("products");
   const list = activeCat === "All" ? products : products.filter((p) => p.category === activeCat);
-  if (list.length === 0) { grid.innerHTML = '<p class="empty">No products here yet.</p>'; return; }
+  if (list.length === 0) { grid.innerHTML = '<p class="empty">No products here yet. (Firebase loading...)</p>'; return; }
   grid.innerHTML = "";
   list.forEach((p, i) => {
     const price = finalPrice(p);
@@ -156,7 +157,10 @@ function renderAdmin() {
       <img src="${p.image}" alt="${p.name}" />
       <div class="ap-info"><div class="ap-name">${p.name}</div><div class="ap-sub">${p.category} · ₹${p.price}</div></div>
       <button class="trash">🗑️</button>`;
-    el.querySelector(".trash").onclick = () => { products = products.filter((x) => x.id !== p.id); save("knk_products", products); renderProducts(); renderAdmin(); };
+    el.querySelector(".trash").onclick = () => { 
+       // (Note: Abhi ke liye yeh sirf screen se hatega, Firebase se delete karne ka logic baad me lagana padega)
+       products = products.filter((x) => x.id !== p.id); renderProducts(); renderAdmin(); 
+    };
     list.appendChild(el);
   });
 }
