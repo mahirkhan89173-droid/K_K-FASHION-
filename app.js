@@ -1,3 +1,22 @@
+// ===== Firebase Setup =====
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
+import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-analytics.js";
+import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-storage.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBEBIKehowe8KjYFe2L8wegHOpYnuBtx2k",
+  authDomain: "kk-fashion-267cc.firebaseapp.com",
+  projectId: "kk-fashion-267cc",
+  storageBucket: "kk-fashion-267cc.firebasestorage.app",
+  messagingSenderId: "442266988581",
+  appId: "1:442266988581:web:c72f318b2ce17c2c580fcc",
+  measurementId: "G-8CVPWV26LF"
+};
+
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
+const storage = getStorage(app);
+
 // ===== Config =====
 const WHATSAPP_NUMBER = "9950701758";
 const ADMIN_PIN = "8619";
@@ -72,12 +91,12 @@ function renderProducts() {
           ${p.discount > 0 ? `<span class="strike">₹${p.price}</span><span class="off">${p.discount}% off</span>` : ""}
         </div>
         <div class="btn-row">
-          <button class="btn-outline">🛒 Cart</button>
-          <button class="btn-primary">💬 Buy</button>
+          <button class="btn-outline cart-add-btn">🛒 Cart</button>
+          <button class="btn-primary buy-btn">💬 Buy</button>
         </div>
       </div>`;
-    el.querySelector(".btn-outline").onclick = () => addToCart(p);
-    el.querySelector(".btn-primary").onclick = () => {
+    el.querySelector(".cart-add-btn").onclick = () => addToCart(p);
+    el.querySelector(".buy-btn").onclick = () => {
       const text = encodeURIComponent(`Hello! I want to buy: ${p.name} - ₹${price}`);
       window.open(`https://wa.me/91${WHATSAPP_NUMBER}?text=${text}`, "_blank");
     };
@@ -179,13 +198,72 @@ $("addCatBtn").onclick = () => {
   save("knk_categories", categories); $("newCat").value = "";
   renderCats(); renderProducts(); renderAdmin();
 };
+
+// ===== Firebase Storage Upload & Product Add =====
 $("addProductBtn").onclick = () => {
-  const name = $("pName").value.trim(); const image = $("pImage").value.trim(); const price = Number($("pPrice").value);
-  if (!name || !image || !price) return;
-  products.unshift({ id: uid(), name, image, price, discount: Number($("pDiscount").value) || 0, extra: Number($("pExtra").value) || 0, category: $("pCategory").value || categories[0] || "Other" });
-  save("knk_products", products);
-  ["pName","pImage","pPrice","pDiscount","pExtra"].forEach((id) => ($(id).value = ""));
-  renderProducts(); renderAdmin();
+  const name = $("pName").value.trim(); 
+  const price = Number($("pPrice").value);
+  const fileInput = $("pImageFile");
+  const file = fileInput.files[0];
+
+  if (!name || !price || !file) {
+    alert("Please provide a product name, price, and select an image file.");
+    return;
+  }
+
+  // Update button to show upload state
+  const btn = $("addProductBtn");
+  btn.textContent = "Uploading Image...";
+  btn.disabled = true;
+
+  // Create a unique storage reference
+  const storageRef = ref(storage, 'products/' + Date.now() + '_' + file.name);
+  const uploadTask = uploadBytesResumable(storageRef, file);
+
+  uploadTask.on('state_changed', 
+    (snapshot) => {
+      // You can add a progress bar indicator here if you want in the future
+      const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+      console.log('Upload is ' + progress + '% done');
+    }, 
+    (error) => {
+      console.error("Firebase upload failed:", error);
+      alert("Failed to upload image. Please try again.");
+      btn.textContent = "Add Product";
+      btn.disabled = false;
+    }, 
+    async () => {
+      // Upload complete, get download URL
+      const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+      
+      // Save product with Firebase URL
+      products.unshift({ 
+        id: uid(), 
+        name, 
+        image: downloadURL, 
+        price, 
+        discount: Number($("pDiscount").value) || 0, 
+        extra: Number($("pExtra").value) || 0, 
+        category: $("pCategory").value || categories[0] || "Other" 
+      });
+      
+      save("knk_products", products);
+      
+      // Reset fields
+      $("pName").value = "";
+      $("pPrice").value = "";
+      $("pDiscount").value = "";
+      $("pExtra").value = "";
+      fileInput.value = "";
+      
+      // Reset button
+      btn.textContent = "Add Product";
+      btn.disabled = false;
+
+      renderProducts(); 
+      renderAdmin();
+    }
+  );
 };
 
 // ===== Init =====
