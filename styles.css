@@ -60,7 +60,6 @@ body { font-family: var(--font-body); background: var(--bg); color: var(--fg); -
 .btn-primary:hover { background: var(--primary-dim); }
 .btn-primary:active { transform: scale(0.97); }
 .btn-primary.full, .full { width: 100%; }
-.btn-primary:disabled { opacity: 0.6; cursor: not-allowed; } /* Added disabled state for uploading */
 .link { background: none; border: none; color: var(--muted); font-size: 12px; cursor: pointer; width: 100%; margin-top: 8px; transition: color 0.2s; }
 .link:hover { color: var(--muted2); }
 
