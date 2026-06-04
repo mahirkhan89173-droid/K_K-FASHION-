@@ -100,14 +100,15 @@
   </div>
 
   <script type="module">
-    // Import the functions you need from the SDKs you need
+    // 1. Firebase ki zaroori cheezein import karein
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
     import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-analytics.js";
-    
-    // Maine Storage bhi import kar diya hai taaki aap website me image upload kar sako
     import { getStorage } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-storage.js";
+    
+    // YAHAN FIRESTORE BHI IMPORT KIYA HAI
+    import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
 
-    // Your web app's Firebase configuration
+    // 2. Aapki Firebase configuration
     const firebaseConfig = {
       apiKey: "AIzaSyBr_e6aCi-GssY8gay0BtzTMJ6jnykj1Vk",
       authDomain: "kkfashion-e0234.firebaseapp.com",
@@ -118,12 +119,52 @@
       measurementId: "G-X6CVDBPL1C"
     };
 
-    // Initialize Firebase
+    // 3. Firebase Initialize karein
     const app = initializeApp(firebaseConfig);
     const analytics = getAnalytics(app);
-    
-    // Storage ko initialize karke window me daal diya taaki aapki app.js isko access kar sake
     window.firebaseStorage = getStorage(app);
+    
+    // Firestore Initialize karein
+    const db = getFirestore(app);
+    window.firebaseDb = db; // app.js ke liye global bana diya
+
+    // 4. "Add Product" button ka code
+    document.getElementById("addProductBtn").addEventListener("click", async () => {
+      const pName = document.getElementById("pName").value;
+      const pImage = document.getElementById("pImage").value;
+      const pPrice = document.getElementById("pPrice").value;
+      const pDiscount = document.getElementById("pDiscount").value;
+      const pCategory = document.getElementById("pCategory").value;
+
+      // Check karein ki details bhari hain ya nahi
+      if(pName !== "" && pImage !== "" && pPrice !== "") {
+        try {
+          // Firestore ke "products" collection me data save karein
+          await addDoc(collection(db, "products"), {
+            name: pName,
+            imageUrl: pImage,
+            price: Number(pPrice),
+            discount: Number(pDiscount) || 0,
+            category: pCategory,
+            timestamp: new Date()
+          });
+          
+          alert("Product Firebase me successfully save ho gaya! 🎉");
+          
+          // Boxes wapas khali kar dein
+          document.getElementById("pName").value = "";
+          document.getElementById("pImage").value = "";
+          document.getElementById("pPrice").value = "";
+          document.getElementById("pDiscount").value = "";
+          
+        } catch (e) {
+          console.error("Error: ", e);
+          alert("Data save karne me error aayi: " + e.message);
+        }
+      } else {
+        alert("Pehle Product ka Naam, Image URL aur Price toh daalo!");
+      }
+    });
   </script>
 
   <script src="app.js"></script>
