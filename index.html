@@ -99,6 +99,40 @@
     </div>
   </div>
 
+  <script type="module">
+    // Firebase App और Analytics इम्पोर्ट करें
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-analytics.js";
+    
+    // डेटाबेस जोड़ने के लिए Realtime Database इम्पोर्ट किया है
+    import { getDatabase, ref, set, push, onValue } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-database.js";
+
+    // आपकी Firebase कॉन्फ़िगरेशन
+    const firebaseConfig = {
+      apiKey: "AIzaSyBQaR7yE0p35VOP6COwfVhyXYa6MRgJ4rA",
+      authDomain: "kkprunner.firebaseapp.com",
+      projectId: "kkprunner",
+      storageBucket: "kkprunner.firebasestorage.app",
+      messagingSenderId: "1098404975672",
+      appId: "1:1098404975672:web:67c9855afca7f0973d42cd",
+      measurementId: "G-P57TESPJCP"
+    };
+
+    // Firebase को इनिशियलाइज़ करें
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+    const database = getDatabase(app);
+
+    // इसे विंडो ऑब्जेक्ट में डाल दिया है ताकि app.js फाइल इसका इस्तेमाल कर सके
+    window.firebaseDB = database;
+    window.dbRef = ref;
+    window.dbSet = set;
+    window.dbPush = push;
+    window.dbOnValue = onValue;
+
+    console.log("Firebase Successfully Connected for K_K Fashion!");
+  </script>
+
   <script src="app.js"></script>
 </body>
 </html>
