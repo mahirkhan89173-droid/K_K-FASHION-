@@ -100,12 +100,9 @@
   </div>
 
   <script type="module">
-    // 1. Firebase ki zaroori cheezein import karein
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
-    import { getStorage } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-storage.js";
-    import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
 
-    // 2. Aapki NAYI Firebase configuration
     const firebaseConfig = {
       apiKey: "AIzaSyBXCtwKT6klj3xcZfTBkOIg8YACa_OgWwo",
       authDomain: "kkfashion-aaa22.firebaseapp.com",
@@ -115,49 +112,80 @@
       appId: "1:236160837133:web:531d73323c958f68849744"
     };
 
-    // 3. Firebase Initialize karein
     const app = initializeApp(firebaseConfig);
-    window.firebaseStorage = getStorage(app);
-    
-    // Firestore Initialize karein
     const db = getFirestore(app);
-    window.firebaseDb = db; // app.js ke liye global bana diya
 
-    // 4. "Add Product" button ka code
+    // 1. Firebase se data website me laane ka function
+    async function fetchProducts() {
+      try {
+        const querySnapshot = await getDocs(collection(db, "products"));
+        const fbProducts = [];
+        
+        querySnapshot.forEach((doc) => {
+          const data = doc.data();
+          fbProducts.push({
+            id: doc.id,
+            name: data.name,
+            image: data.imageUrl, 
+            price: data.price,
+            discount: data.discount || 0,
+            extra: data.extra || 0,
+            category: data.category
+          });
+        });
+        
+        // Yeh line data app.js ko bhejti hai
+        if (window.updateProductsFromFirebase) {
+          window.updateProductsFromFirebase(fbProducts);
+        }
+      } catch (error) {
+        console.error("Error fetching products: ", error);
+      }
+    }
+
+    // Load hote hi data fetch karo
+    fetchProducts();
+
+    // 2. Naya product Firebase me save karne ka function
     document.getElementById("addProductBtn").addEventListener("click", async () => {
       const pName = document.getElementById("pName").value;
       const pImage = document.getElementById("pImage").value;
       const pPrice = document.getElementById("pPrice").value;
       const pDiscount = document.getElementById("pDiscount").value;
+      const pExtra = document.getElementById("pExtra").value;
       const pCategory = document.getElementById("pCategory").value;
 
-      // Check karein ki details bhari hain ya nahi
       if(pName !== "" && pImage !== "" && pPrice !== "") {
+        document.getElementById("addProductBtn").textContent = "Saving...";
         try {
-          // Firestore ke "products" collection me data save karein
           await addDoc(collection(db, "products"), {
             name: pName,
             imageUrl: pImage,
             price: Number(pPrice),
             discount: Number(pDiscount) || 0,
+            extra: Number(pExtra) || 0,
             category: pCategory,
             timestamp: new Date()
           });
           
-          alert("Product Firebase me successfully save ho gaya! 🎉");
+          alert("Product Live Ho Gaya! 🎉");
           
-          // Boxes wapas khali kar dein
           document.getElementById("pName").value = "";
           document.getElementById("pImage").value = "";
           document.getElementById("pPrice").value = "";
           document.getElementById("pDiscount").value = "";
+          document.getElementById("pExtra").value = "";
+          
+          // Save hone ke baad screen update karo
+          fetchProducts();
           
         } catch (e) {
-          console.error("Error: ", e);
-          alert("Data save karne me error aayi: " + e.message);
+          alert("Error: " + e.message);
+        } finally {
+          document.getElementById("addProductBtn").textContent = "Add Product";
         }
       } else {
-        alert("Pehle Product ka Naam, Image URL aur Price toh daalo!");
+        alert("Pehle Product ka Naam, Image URL aur Price daalein!");
       }
     });
   </script>
