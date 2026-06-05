@@ -7,15 +7,14 @@ const load = (k, fb) => { try { const r = localStorage.getItem(k); return r ? JS
 const save = (k, v) => localStorage.setItem(k, JSON.stringify(v));
 
 let categories = load("knk_categories", DEFAULT_CATEGORIES);
-let products   = []; // 🔥 NAYA: Ab data local se nahi, Firebase se aayega!
+let products   = []; // Data Firebase se aayega
 let cart       = load("knk_cart",       []);
 let activeCat  = "All";
 
 const finalPrice = (p) => Math.round(p.price - (p.price * p.discount) / 100 + (p.extra || 0));
-const uid = () => "p" + Date.now() + Math.floor(Math.random() * 1000);
 const $ = (id) => document.getElementById(id);
 
-// 🔥 NAYA FUNCTION: HTML wali file Firebase se data lakar isko degi 🔥
+// HTML wali file Firebase se data lakar yaha bhejegi
 window.updateProductsFromFirebase = function(firebaseProducts) {
   products = firebaseProducts;
   renderProducts();
@@ -48,7 +47,7 @@ function renderProducts() {
   $("activeTitle").textContent = activeCat;
   const grid = $("products");
   const list = activeCat === "All" ? products : products.filter((p) => p.category === activeCat);
-  if (list.length === 0) { grid.innerHTML = '<p class="empty">No products here yet. (Firebase loading...)</p>'; return; }
+  if (list.length === 0) { grid.innerHTML = '<p class="empty">Loading products from server...</p>'; return; }
   grid.innerHTML = "";
   list.forEach((p, i) => {
     const price = finalPrice(p);
@@ -85,12 +84,14 @@ function addToCart(p) {
   btn.style.color = "#C9A84C";
   setTimeout(() => { btn.style.color = ""; }, 600);
 }
+
 function removeFromCart(id) { cart = cart.filter((i) => i.product.id !== id); save("knk_cart", cart); renderCartCount(); renderCart(); }
 function clearCart() { cart = []; save("knk_cart", cart); renderCartCount(); renderCart(); }
 function renderCartCount() {
   const count = cart.reduce((s, i) => s + i.qty, 0);
   const badge = $("cartCount"); badge.textContent = count; badge.classList.toggle("hidden", count === 0);
 }
+
 function renderCart() {
   const body = $("cartItems"); const foot = $("cartFooter");
   if (cart.length === 0) { body.innerHTML = '<p class="empty">Cart is empty</p>'; foot.classList.add("hidden"); return; }
@@ -110,6 +111,7 @@ function renderCart() {
   const total = cart.reduce((s, i) => s + finalPrice(i.product) * i.qty, 0);
   $("cartTotal").textContent = "₹" + total; foot.classList.remove("hidden");
 }
+
 $("cartBtn").onclick = () => { renderCart(); $("cartOverlay").classList.remove("hidden"); };
 $("cartClose").onclick = () => $("cartOverlay").classList.add("hidden");
 $("cartOverlay").onclick = (e) => { if (e.target === $("cartOverlay")) $("cartOverlay").classList.add("hidden"); };
@@ -157,9 +159,20 @@ function renderAdmin() {
       <img src="${p.image}" alt="${p.name}" />
       <div class="ap-info"><div class="ap-name">${p.name}</div><div class="ap-sub">${p.category} · ₹${p.price}</div></div>
       <button class="trash">🗑️</button>`;
+      
+    // 🔥 NAYA: Delete Confirm & Firebase Trigger 🔥
     el.querySelector(".trash").onclick = () => { 
-       // (Note: Abhi ke liye yeh sirf screen se hatega, Firebase se delete karne ka logic baad me lagana padega)
-       products = products.filter((x) => x.id !== p.id); renderProducts(); renderAdmin(); 
+       if(confirm("Kya aap sach me is product ko delete karna chahte hain?")) {
+         // Pehle app se screen se hata do
+         products = products.filter((x) => x.id !== p.id); 
+         renderProducts(); 
+         renderAdmin(); 
+         
+         // Fir Firebase ko batao permanently delete karne ke liye
+         if(window.deleteProductFromFirebase) {
+            window.deleteProductFromFirebase(p.id);
+         }
+       }
     };
     list.appendChild(el);
   });
