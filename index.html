@@ -101,7 +101,8 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
+    // 🔥 YAHAN doc aur deleteDoc add kiya gaya hai
+    import { getFirestore, collection, addDoc, getDocs, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyBXCtwKT6klj3xcZfTBkOIg8YACa_OgWwo",
@@ -146,7 +147,18 @@
     // Load hote hi data fetch karo
     fetchProducts();
 
-    // 2. Naya product Firebase me save karne ka function
+    // 🔥 2. NAYA: Product Delete karne ka function 🔥
+    window.deleteProductFromFirebase = async function(productId) {
+      try {
+        await deleteDoc(doc(db, "products", productId));
+        console.log("Firebase se product permanently delete ho gaya!");
+      } catch (error) {
+        console.error("Delete karne me error aayi: ", error);
+        alert("Delete fail ho gaya, internet check karein!");
+      }
+    };
+
+    // 3. Naya product Firebase me save karne ka function
     document.getElementById("addProductBtn").addEventListener("click", async () => {
       const pName = document.getElementById("pName").value;
       const pImage = document.getElementById("pImage").value;
