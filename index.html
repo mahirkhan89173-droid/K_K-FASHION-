@@ -66,6 +66,20 @@
     </div>
   </div>
 
+  <div id="editModal" class="overlay center hidden">
+    <div class="pin-box">
+      <button id="editClose" class="icon-btn close-abs" aria-label="Close">✕</button>
+      <h2>Edit Product</h2>
+      <p id="editPName" style="margin-bottom: 15px; font-weight: 600; color: #333;"></p>
+      <div class="row3" style="margin-bottom: 15px;">
+        <input id="editPPrice" class="field" type="number" placeholder="Price" />
+        <input id="editPDiscount" class="field" type="number" placeholder="Discount %" />
+        <input id="editPExtra" class="field" type="number" placeholder="Extra ₹" />
+      </div>
+      <button id="saveEditBtn" class="btn-primary full">Save Changes</button>
+    </div>
+  </div>
+
   <div id="adminPanel" class="admin hidden">
     <div class="admin-inner">
       <div class="drawer-head">
@@ -101,8 +115,8 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
-    // 🔥 YAHAN doc aur deleteDoc add kiya gaya hai
-    import { getFirestore, collection, addDoc, getDocs, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
+    // 🔥 YAHAN updateDoc add kiya hai
+    import { getFirestore, collection, addDoc, getDocs, doc, deleteDoc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyBXCtwKT6klj3xcZfTBkOIg8YACa_OgWwo",
@@ -116,12 +130,11 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // 1. Firebase se data website me laane ka function
+    // 1. Fetch Products
     async function fetchProducts() {
       try {
         const querySnapshot = await getDocs(collection(db, "products"));
         const fbProducts = [];
-        
         querySnapshot.forEach((doc) => {
           const data = doc.data();
           fbProducts.push({
@@ -134,8 +147,6 @@
             category: data.category
           });
         });
-        
-        // Yeh line data app.js ko bhejti hai
         if (window.updateProductsFromFirebase) {
           window.updateProductsFromFirebase(fbProducts);
         }
@@ -144,21 +155,60 @@
       }
     }
 
-    // Load hote hi data fetch karo
-    fetchProducts();
-
-    // 🔥 2. NAYA: Product Delete karne ka function 🔥
-    window.deleteProductFromFirebase = async function(productId) {
+    // 2. Fetch Categories
+    async function fetchCategories() {
       try {
-        await deleteDoc(doc(db, "products", productId));
-        console.log("Firebase se product permanently delete ho gaya!");
+        const catDoc = await getDoc(doc(db, "settings", "storeData"));
+        if (catDoc.exists()) {
+          const data = catDoc.data();
+          if (data.categories && window.updateCategoriesFromFirebase) {
+            window.updateCategoriesFromFirebase(data.categories);
+          }
+        } else {
+          const defaultCats = ["Combos", "T-Shirt", "Shirt", "Pant"];
+          await setDoc(doc(db, "settings", "storeData"), { categories: defaultCats });
+          if (window.updateCategoriesFromFirebase) {
+            window.updateCategoriesFromFirebase(defaultCats);
+          }
+        }
       } catch (error) {
-        console.error("Delete karne me error aayi: ", error);
-        alert("Delete fail ho gaya, internet check karein!");
+        console.error("Error fetching categories:", error);
+      }
+    }
+
+    fetchProducts();
+    fetchCategories();
+
+    // 3. Save Categories
+    window.saveCategoriesToFirebase = async function(updatedCategories) {
+      try {
+        await setDoc(doc(db, "settings", "storeData"), { categories: updatedCategories }, { merge: true });
+      } catch(error) {
+        console.error("Error saving categories: ", error);
       }
     };
 
-    // 3. Naya product Firebase me save karne ka function
+    // 4. Delete Product
+    window.deleteProductFromFirebase = async function(productId) {
+      try {
+        await deleteDoc(doc(db, "products", productId));
+      } catch (error) {
+        console.error("Delete karne me error aayi: ", error);
+      }
+    };
+
+    // 🔥 5. NAYA: Update Product Price/Discount 🔥
+    window.updateProductInFirebase = async function(productId, newData) {
+      try {
+        await updateDoc(doc(db, "products", productId), newData);
+        console.log("Product successfully update ho gaya!");
+      } catch (error) {
+        console.error("Update karne me error aayi: ", error);
+        alert("Update nahi ho paya. Internet connection check karein!");
+      }
+    };
+
+    // 6. Add Product
     document.getElementById("addProductBtn").addEventListener("click", async () => {
       const pName = document.getElementById("pName").value;
       const pImage = document.getElementById("pImage").value;
@@ -188,9 +238,7 @@
           document.getElementById("pDiscount").value = "";
           document.getElementById("pExtra").value = "";
           
-          // Save hone ke baad screen update karo
           fetchProducts();
-          
         } catch (e) {
           alert("Error: " + e.message);
         } finally {
