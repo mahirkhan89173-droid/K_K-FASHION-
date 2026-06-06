@@ -114,20 +114,27 @@
   </div>
 
   <script type="module">
+    // Firebase App aur Analytics Import
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
-    // 🔥 YAHAN updateDoc add kiya hai
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-analytics.js";
+    
+    // Firestore Import
     import { getFirestore, collection, addDoc, getDocs, doc, deleteDoc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
 
+    // Firebase Configuration (Analytics measurementId ke sath)
     const firebaseConfig = {
       apiKey: "AIzaSyBXCtwKT6klj3xcZfTBkOIg8YACa_OgWwo",
       authDomain: "kkfashion-aaa22.firebaseapp.com",
       projectId: "kkfashion-aaa22",
       storageBucket: "kkfashion-aaa22.firebasestorage.app",
       messagingSenderId: "236160837133",
-      appId: "1:236160837133:web:531d73323c958f68849744"
+      appId: "1:236160837133:web:531d73323c958f68849744",
+      measurementId: "G-MFZ80TQVKT"
     };
 
+    // Firebase, Analytics aur Firestore Initialize karein
     const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
     const db = getFirestore(app);
 
     // 1. Fetch Products
@@ -197,7 +204,7 @@
       }
     };
 
-    // 🔥 5. NAYA: Update Product Price/Discount 🔥
+    // 5. Update Product Price/Discount 
     window.updateProductInFirebase = async function(productId, newData) {
       try {
         await updateDoc(doc(db, "products", productId), newData);
