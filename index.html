@@ -105,7 +105,7 @@
     </div>
   </div>
 
-  <div id="cartOverlay" class="overlay hidden">
+  <div id="cartOverlay" class="overlay hidden" style="z-index: 70;">
     <div class="drawer">
       <div class="drawer-head">
         <h2>Your Cart</h2>
@@ -120,13 +120,33 @@
     </div>
   </div>
 
-  <div id="checkoutOverlay" class="overlay hidden">
+  <div id="checkoutOverlay" class="overlay hidden" style="z-index: 100;">
     <div class="checkout-page">
       <div class="checkout-header">
         <button id="closeCheckout" class="icon-btn" style="font-size:24px;">←</button>
-        <h2>Step 1: Delivery Address</h2>
+        <h2>Checkout</h2>
       </div>
-      <div class="checkout-body">
+
+      <div class="checkout-stepper">
+        <div class="step-item active" id="step1Indicator">
+          <div class="step-circle" id="step1Circle">1</div>
+          <span class="step-label">पता</span>
+        </div>
+        <div class="step-line" id="line1"></div>
+        
+        <div class="step-item" id="step2Indicator">
+          <div class="step-circle" id="step2Circle">2</div>
+          <span class="step-label">सारांश</span>
+        </div>
+        <div class="step-line" id="line2"></div>
+        
+        <div class="step-item" id="step3Indicator">
+          <div class="step-circle" id="step3Circle">3</div>
+          <span class="step-label">भुगतान</span>
+        </div>
+      </div>
+
+      <div class="checkout-body" id="checkoutStep1">
         <div class="row2">
           <div class="field-group">
             <label class="field-label">Full Name</label>
@@ -160,14 +180,15 @@
           <input id="chkLandmark" class="field" type="text" placeholder="Near school, temple, hospital etc." />
         </div>
       </div>
+      
       <div class="checkout-footer">
         <div class="total" style="margin-bottom:8px;"><span>Order Total:</span><span id="chkTotalAmt">₹0</span></div>
-        <button id="step1NextBtn" class="btn-primary full">Next Step (Payment)</button>
+        <button id="step1NextBtn" class="btn-primary full">Save Address & Place Order</button>
       </div>
     </div>
   </div>
 
-  <div id="adminPin" class="overlay center hidden">
+  <div id="adminPin" class="overlay center hidden" style="z-index: 110;">
     <div class="pin-box">
       <button id="pinClose" class="icon-btn close-abs">✕</button>
       <div class="lock">🔒</div>
@@ -179,7 +200,7 @@
     </div>
   </div>
 
-  <div id="editModal" class="overlay center hidden">
+  <div id="editModal" class="overlay center hidden" style="z-index: 120;">
     <div class="pin-box wide-box">
       <button id="editClose" class="icon-btn close-abs">✕</button>
       <h2>Edit Product</h2>
@@ -210,12 +231,18 @@
     </div>
   </div>
 
-  <div id="adminPanel" class="admin hidden">
+  <div id="adminPanel" class="admin hidden" style="z-index: 105;">
     <div class="admin-inner">
       <div class="drawer-head">
         <h2>Admin Panel</h2>
         <button id="adminClose" class="icon-btn">✕</button>
       </div>
+
+      <section class="card">
+        <h3>Live Orders</h3>
+        <p class="section-hint">Customer ke naye orders (Address aur Products) yahan dikhenge.</p>
+        <div id="adminOrdersList">Loading orders...</div>
+      </section>
 
       <section class="card">
         <h3>Categories</h3>
@@ -347,8 +374,30 @@
       } catch(e) { console.error(e); }
     }
 
+    // --- NEW: FIREBASE ORDERS LOGIC ---
+    window.saveOrderToFirebase = async function(orderData) {
+      try {
+        await addDoc(collection(db, "orders"), { ...orderData, timestamp: new Date() });
+        return true;
+      } catch (e) {
+        alert("Order save error: " + e.message);
+        return false;
+      }
+    };
+
+    window.fetchOrdersFromFirebase = async function() {
+      try {
+        const snap = await getDocs(collection(db, "orders"));
+        const list = [];
+        snap.forEach(d => list.push({ id: d.id, ...d.data() }));
+        list.sort((a,b) => b.timestamp - a.timestamp); // Sort by newest first
+        if (window.renderAdminOrders) window.renderAdminOrders(list);
+      } catch (e) { console.error("Fetch orders error:", e); }
+    };
+
     fetchSettings();
     fetchProducts();
+    window.fetchOrdersFromFirebase(); // Fetch orders on load
 
     window.saveCategoriesToFirebase = async function(cats) {
       try { await setDoc(doc(db, "settings", "storeData"), { mainCategories: cats }, { merge: true }); } catch(e) {}
