@@ -33,8 +33,6 @@
 
   <!-- MAIN APP -->
   <div id="app" class="app hidden">
-
-    <!-- HEADER -->
     <header class="header">
       <button id="logoBtn" class="logo-btn" aria-label="Store logo">
         <span class="brand-mark">K_K</span>
@@ -46,7 +44,6 @@
       </button>
     </header>
 
-    <!-- 🔎 SEARCH BAR -->
     <div class="search-wrap">
       <div class="search-box">
         <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -60,21 +57,61 @@
       </div>
     </div>
 
-    <!-- MAIN CATEGORY BAR -->
     <div class="main-cats-wrap">
       <div id="mainCats" class="main-cats"></div>
     </div>
 
-    <!-- SUB-CATEGORY BAR -->
     <div id="subCatsWrap" class="sub-cats-wrap hidden-bar">
       <div id="subCats" class="cats"></div>
     </div>
 
-    <!-- PRODUCT SECTION -->
     <main class="main">
       <h2 id="activeTitle" class="section-title"></h2>
       <div id="products" class="grid"></div>
     </main>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       PRODUCT DETAIL PAGE
+  ═══════════════════════════════════════ -->
+  <div id="prodDetail" class="prod-detail hidden">
+    <div class="pd-header">
+      <button id="pdBackBtn" class="pd-back">
+        <span class="pd-back-icon">&#8592;</span>
+        <span>Back</span>
+      </button>
+      <span class="brand-mark" style="font-size:18px;">K_K</span>
+      <button id="pdCartBtn" class="icon-btn" aria-label="Open cart">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+        <span id="pdCartCount" class="badge hidden">0</span>
+      </button>
+    </div>
+
+    <div class="pd-scroll" id="pdScroll">
+      <div class="pd-img-wrap">
+        <img id="pdImage" src="" alt="" />
+        <span id="pdStockBadge" class="stock-badge in pd-img-stock">● In Stock</span>
+      </div>
+
+      <div class="pd-info">
+        <div id="pdBreadcrumb" class="pd-breadcrumb"></div>
+        <h1 id="pdName" class="pd-name"></h1>
+        <div class="pd-price-row">
+          <span id="pdPrice" class="pd-price"></span>
+          <span id="pdStrike" class="pd-strike hidden"></span>
+          <span id="pdOff" class="pd-off hidden"></span>
+        </div>
+      </div>
+
+      <!-- Horizontal sections for all categories & subcategories -->
+      <div id="pdHorizSections" class="horiz-sections"></div>
+    </div>
+
+    <!-- Sticky bottom buttons -->
+    <div class="pd-action-bar">
+      <button id="pdAddCart" class="btn-outline">🛒 Add to Cart</button>
+      <button id="pdBuyNow" class="btn-primary">💬 Buy Now</button>
+    </div>
   </div>
 
   <!-- CART DRAWER -->
