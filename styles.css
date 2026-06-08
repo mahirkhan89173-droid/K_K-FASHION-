@@ -27,15 +27,41 @@ body { font-family: var(--font-body); background: var(--bg); color: var(--fg); -
 .icon-btn:hover { background: rgba(201,168,76,0.1); color: var(--primary); }
 .badge { position: absolute; top: 0; right: 0; min-width: 18px; height: 18px; padding: 0 4px; display: flex; align-items: center; justify-content: center; border-radius: 999px; background: var(--primary); color: var(--primary-fg); font-size: 10px; font-weight: 700; }
 
-/* MAIN CATEGORY BAR (GEN-Z PREMIUM | OTHER) */
-.main-cats-wrap { position: sticky; top: 57px; z-index: 22; background: var(--bg); border-bottom: 1px solid var(--border); animation: slideDown 0.5s ease 0.15s both; padding: 10px 14px; }
-.main-cats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+/* MAIN CATEGORY BAR — HORIZONTAL SCROLL */
+.main-cats-wrap {
+  position: sticky; top: 57px; z-index: 22;
+  background: var(--bg); border-bottom: 1px solid var(--border);
+  animation: slideDown 0.5s ease 0.15s both;
+  padding: 10px 14px;
+}
+.main-cats {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.main-cats::-webkit-scrollbar { display: none; }
+
 .main-cat-btn {
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 3px; padding: 12px 10px; border-radius: 14px;
-  border: 1.5px solid var(--border2); background: var(--card2);
-  color: var(--muted2); cursor: pointer; font-family: var(--font-body);
-  transition: all 0.25s ease; position: relative; overflow: hidden;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 18px;
+  border-radius: 999px;
+  border: 1.5px solid var(--border2);
+  background: var(--card2);
+  color: var(--muted2);
+  cursor: pointer;
+  font-family: var(--font-body);
+  transition: all 0.25s ease;
+  position: relative;
+  overflow: hidden;
+  white-space: nowrap;
 }
 .main-cat-btn::after {
   content: ''; position: absolute; inset: 0;
@@ -54,7 +80,7 @@ body { font-family: var(--font-body); background: var(--bg); color: var(--fg); -
 
 /* SUB-CATEGORY BAR */
 .sub-cats-wrap {
-  position: sticky; top: calc(57px + 78px); z-index: 21;
+  position: sticky; top: calc(57px + 58px); z-index: 21;
   background: var(--bg2); border-bottom: 1px solid var(--border);
   animation: slideDown 0.5s ease 0.2s both; transition: max-height 0.3s ease, opacity 0.3s ease;
   max-height: 60px; overflow: hidden;
@@ -172,6 +198,49 @@ select.field { cursor: pointer; }
 .ap-actions button:hover { background: rgba(255,255,255,0.06); }
 .out-of-stock-overlay { position: relative; }
 .out-of-stock-overlay::after { content: 'Out of Stock'; position: absolute; inset: 0; background: rgba(10,10,10,0.65); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: var(--destructive); border-radius: 16px 16px 0 0; }
+
+/* INLINE ROW (admin add category) */
+.inline-row { display: flex; gap: 8px; align-items: center; }
+.inline-row .field { margin-bottom: 0; flex: 1; }
+.sm-btn { padding: 10px 16px; font-size: 13px; font-weight: 600; border-radius: 10px; background: var(--primary); color: var(--primary-fg); border: none; cursor: pointer; white-space: nowrap; flex-shrink: 0; transition: background 0.2s; }
+.sm-btn:hover { background: var(--primary-dim); }
+
+/* CATEGORY MANAGEMENT ITEMS */
+.cat-mgmt-item {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--bg2);
+  padding: 12px 14px;
+  margin-bottom: 10px;
+  animation: fadeUp 0.3s ease;
+}
+.cat-mgmt-header { display: flex; align-items: center; gap: 8px; }
+.cat-mgmt-name { flex: 1; font-size: 14px; font-weight: 600; color: var(--fg); letter-spacing: 0.04em; }
+.cat-mgmt-name-input {
+  flex: 1; border: 1px solid var(--primary); background: var(--bg);
+  color: var(--fg); border-radius: 8px; padding: 6px 10px;
+  font-size: 13px; font-family: var(--font-body);
+}
+.cat-mgmt-name-input:focus { outline: none; }
+.cat-action-btn { background: none; border: none; cursor: pointer; font-size: 15px; padding: 4px 6px; border-radius: 8px; transition: background 0.2s; flex-shrink: 0; }
+.cat-action-btn:hover { background: rgba(255,255,255,0.07); }
+.cat-action-btn.del { color: var(--destructive); }
+.cat-action-btn.save { color: #4cc968; }
+.cat-action-btn.edit { color: var(--primary); }
+.cat-action-btn.toggle { color: var(--muted2); font-size: 13px; }
+
+/* SUB-CATEGORY MANAGEMENT */
+.sub-mgmt-wrap { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
+.sub-mgmt-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; min-height: 28px; }
+.sub-chip { display: inline-flex; align-items: center; gap: 5px; background: var(--secondary); color: var(--secondary-fg); border-radius: 999px; padding: 4px 12px; font-size: 12px; font-weight: 500; letter-spacing: 0.03em; }
+.sub-chip .sub-chip-edit { background: none; border: none; color: var(--primary); cursor: pointer; font-size: 12px; padding: 0 2px; }
+.sub-chip .sub-chip-del { background: none; border: none; color: var(--destructive); cursor: pointer; font-size: 14px; line-height: 1; padding: 0 2px; }
+.sub-add-row { display: flex; gap: 6px; align-items: center; }
+.sub-add-row input { flex: 1; border: 1px solid var(--border); background: var(--bg); color: var(--fg); border-radius: 8px; padding: 7px 10px; font-size: 12px; font-family: var(--font-body); transition: border-color 0.2s; }
+.sub-add-row input:focus { outline: none; border-color: var(--primary); }
+.sub-add-row input::placeholder { color: var(--muted); }
+.sub-add-btn { background: var(--secondary); color: var(--secondary-fg); border: 1px solid var(--border2); border-radius: 8px; padding: 7px 12px; font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: background 0.2s, color 0.2s; }
+.sub-add-btn:hover { background: var(--primary); color: var(--primary-fg); border-color: var(--primary); }
 
 /* ANIMATIONS */
 @keyframes splashFadeIn { from { opacity: 0; } to { opacity: 1; } }
