@@ -6,7 +6,7 @@
   <title>K_K Fashion — Online Clothing Store</title>
   <meta name="google-adsense-account" content="ca-pub-4612907862422691">
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4612907862422691" crossorigin="anonymous"></script>
-  <meta name="description" content="Shop t-shirts, shirts, pants and combos online. Easy ordering on WhatsApp." />
+  <meta name="description" content="Shop t-shirts, shirts, pants and combos online." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
@@ -48,9 +48,7 @@
           <circle cx="11" cy="11" r="7"/>
           <line x1="21" y1="21" x2="16.65" y2="16.65"/>
         </svg>
-        <input id="searchInput" class="search-input" type="text"
-               placeholder="Search watch, dress, earbuds, category..."
-               autocomplete="off" />
+        <input id="searchInput" class="search-input" type="text" placeholder="Search watch, dress, earbuds, category..." autocomplete="off" />
         <button id="searchClear" class="search-clear hidden" aria-label="Clear search">✕</button>
       </div>
     </div>
@@ -103,7 +101,7 @@
 
     <div class="pd-action-bar">
       <button id="pdAddCart" class="btn-outline">🛒 Add to Cart</button>
-      <button id="pdBuyNow" class="btn-primary">💬 Buy Now</button>
+      <button id="pdBuyNow" class="btn-primary">💳 Buy Now</button>
     </div>
   </div>
 
@@ -116,8 +114,55 @@
       <div id="cartItems" class="drawer-body"></div>
       <div id="cartFooter" class="drawer-foot hidden">
         <div class="total"><span>Total</span><span id="cartTotal">₹0</span></div>
-        <button id="checkoutBtn" class="btn-primary full">Order on WhatsApp</button>
+        <button id="checkoutBtn" class="btn-primary full">Proceed to Checkout</button>
         <button id="clearCartBtn" class="link">Clear cart</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="checkoutOverlay" class="overlay hidden">
+    <div class="checkout-page">
+      <div class="checkout-header">
+        <button id="closeCheckout" class="icon-btn" style="font-size:24px;">←</button>
+        <h2>Step 1: Delivery Address</h2>
+      </div>
+      <div class="checkout-body">
+        <div class="row2">
+          <div class="field-group">
+            <label class="field-label">Full Name</label>
+            <input id="chkName" class="field" type="text" placeholder="Aapka pura naam" />
+          </div>
+          <div class="field-group">
+            <label class="field-label">Mobile Number</label>
+            <input id="chkMobile" class="field" type="tel" maxlength="10" placeholder="10-digit number" />
+            <span class="warning-text">Kripya sahi number daalein!</span>
+          </div>
+        </div>
+        
+        <div class="field-group" style="margin-top:12px;">
+          <label class="field-label">Full Address</label>
+          <textarea id="chkAddress" class="field" rows="3" placeholder="House No, Colony, Street, City..."></textarea>
+        </div>
+
+        <div class="row2" style="margin-top:12px;">
+          <div class="field-group">
+            <label class="field-label">State</label>
+            <input id="chkState" class="field" type="text" placeholder="e.g. Rajasthan" />
+          </div>
+          <div class="field-group">
+            <label class="field-label">Pincode</label>
+            <input id="chkPincode" class="field" type="number" placeholder="e.g. 324002" />
+          </div>
+        </div>
+
+        <div class="field-group" style="margin-top:12px;">
+          <label class="field-label">Landmark (Optional)</label>
+          <input id="chkLandmark" class="field" type="text" placeholder="Near school, temple, hospital etc." />
+        </div>
+      </div>
+      <div class="checkout-footer">
+        <div class="total" style="margin-bottom:8px;"><span>Order Total:</span><span id="chkTotalAmt">₹0</span></div>
+        <button id="step1NextBtn" class="btn-primary full">Next Step (Payment)</button>
       </div>
     </div>
   </div>
@@ -270,10 +315,9 @@
         if (snap.exists() && snap.data().mainCategories) {
           cats = snap.data().mainCategories;
         } else {
-          const old = snap.exists() ? snap.data() : {};
           cats = [
-            { id: "cat_genz",  name: "GEN-Z PREMIUM", subCategories: old.subCategories      || ["PUMA COMBO","PREMIUM COMBO"] },
-            { id: "cat_other", name: "OTHER",          subCategories: old.otherSubCategories || [] }
+            { id: "cat_genz",  name: "GEN-Z PREMIUM", subCategories: ["PUMA COMBO","PREMIUM COMBO"] },
+            { id: "cat_other", name: "OTHER",          subCategories: [] }
           ];
           await setDoc(doc(db, "settings", "storeData"), { mainCategories: cats }, { merge: true });
         }
@@ -307,18 +351,15 @@
     fetchProducts();
 
     window.saveCategoriesToFirebase = async function(cats) {
-      try {
-        await setDoc(doc(db, "settings", "storeData"), { mainCategories: cats }, { merge: true });
-      } catch(e) { console.error(e); }
+      try { await setDoc(doc(db, "settings", "storeData"), { mainCategories: cats }, { merge: true }); } catch(e) {}
     };
 
     window.deleteProductFromFirebase = async function(id) {
-      try { await deleteDoc(doc(db, "products", id)); } catch(e) { console.error(e); }
+      try { await deleteDoc(doc(db, "products", id)); } catch(e) {}
     };
 
     window.updateProductInFirebase = async function(id, data) {
-      try { await updateDoc(doc(db, "products", id), data); }
-      catch(e) { alert("Update nahi ho paya. Internet check karein!"); }
+      try { await updateDoc(doc(db, "products", id), data); } catch(e) { alert("Error updating product!"); }
     };
 
     document.getElementById("addProductBtn").addEventListener("click", async () => {
@@ -331,23 +372,18 @@
       const pSubCat  = document.getElementById("pSubCat").value || "";
       const pInStock = document.getElementById("pInStock").checked;
 
-      if (!pName || !pImage || !pPrice) {
-        alert("Naam, Image URL aur Price zaroori hain!");
-        return;
-      }
+      if (!pName || !pImage || !pPrice) { alert("Naam, Image URL aur Price zaroori hain!"); return; }
       const btn = document.getElementById("addProductBtn");
       btn.textContent = "Saving...";
       try {
         await addDoc(collection(db, "products"), {
-          name: pName, imageUrl: pImage,
-          price: Number(pPrice), discount: Number(pDisc) || 0, extra: Number(pExtra) || 0,
-          mainCategoryId: pCatId, subCategory: pSubCat, category: pSubCat,
-          inStock: pInStock, timestamp: new Date()
+          name: pName, imageUrl: pImage, price: Number(pPrice), discount: Number(pDisc) || 0, extra: Number(pExtra) || 0,
+          mainCategoryId: pCatId, subCategory: pSubCat, category: pSubCat, inStock: pInStock, timestamp: new Date()
         });
         alert("Product Live Ho Gaya! 🎉");
         ["pName","pImage","pPrice","pDiscount","pExtra"].forEach(id => document.getElementById(id).value = "");
         fetchProducts();
-      } catch(e) { alert("Error: " + e.message); }
+      } catch(e) {}
       finally { btn.textContent = "Add Product"; }
     });
   </script>
