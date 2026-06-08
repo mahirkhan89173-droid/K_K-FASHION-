@@ -46,7 +46,21 @@
       </button>
     </header>
 
-    <!-- MAIN CATEGORY BAR (dynamic) -->
+    <!-- 🔎 SEARCH BAR -->
+    <div class="search-wrap">
+      <div class="search-box">
+        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="7"/>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input id="searchInput" class="search-input" type="text"
+               placeholder="Search watch, dress, earbuds, category..."
+               autocomplete="off" />
+        <button id="searchClear" class="search-clear hidden" aria-label="Clear search">✕</button>
+      </div>
+    </div>
+
+    <!-- MAIN CATEGORY BAR -->
     <div class="main-cats-wrap">
       <div id="mainCats" class="main-cats"></div>
     </div>
@@ -132,7 +146,6 @@
         <button id="adminClose" class="icon-btn">✕</button>
       </div>
 
-      <!-- CATEGORY MANAGEMENT -->
       <section class="card">
         <h3>Categories</h3>
         <p class="section-hint">Main categories add, edit, delete karein. Har category ke andar sub-categories bhi manage karein.</p>
@@ -143,7 +156,6 @@
         </div>
       </section>
 
-      <!-- ADD PRODUCT -->
       <section class="card">
         <h3>Add Product</h3>
         <input id="pName" class="field" placeholder="Product name" />
@@ -183,7 +195,6 @@
         <button id="addProductBtn" class="btn-primary full">Add Product</button>
       </section>
 
-      <!-- PRODUCTS LIST -->
       <section class="card">
         <h3 id="adminProdTitle">Products</h3>
         <div class="admin-filter-row">
