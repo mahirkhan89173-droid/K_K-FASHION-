@@ -29,7 +29,7 @@ body { font-family: var(--font-body); background: var(--bg); color: var(--fg); -
 
 /* 🔎 SEARCH BAR */
 .search-wrap {
-  position: sticky; top: 57px; z-index: 25;
+  position: relative; z-index: 25;
   background: rgba(10,10,10,0.95); backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border);
   padding: 10px 14px;
@@ -61,7 +61,7 @@ body { font-family: var(--font-body); background: var(--bg); color: var(--fg); -
 
 /* MAIN CATEGORY BAR */
 .main-cats-wrap {
-  position: sticky; top: 113px; z-index: 22;
+  position: relative; z-index: 22;
   background: var(--bg); border-bottom: 1px solid var(--border);
   animation: slideDown 0.5s ease 0.15s both;
   padding: 10px 14px;
@@ -91,7 +91,7 @@ body { font-family: var(--font-body); background: var(--bg); color: var(--fg); -
 
 /* SUB-CATEGORY BAR */
 .sub-cats-wrap {
-  position: sticky; top: 171px; z-index: 21;
+  position: sticky; top: 57px; z-index: 21;
   background: var(--bg2); border-bottom: 1px solid var(--border);
   animation: slideDown 0.5s ease 0.2s both; transition: max-height 0.3s ease, opacity 0.3s ease;
   max-height: 60px; overflow: hidden;
@@ -247,4 +247,4 @@ select.field { cursor: pointer; }
 
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: var(--bg2); }
-::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; } 
