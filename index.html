@@ -4,19 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>K_K Fashion — Online Clothing Store</title>
-  <meta name="google-adsense-account" content="ca-pub-4612907862422691">
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4612907862422691" crossorigin="anonymous"></script>
-  <meta name="description" content="Shop t-shirts, shirts, pants and combos online. Easy ordering on WhatsApp." />
+  <meta name="description" content="Shop t-shirts, shirts, pants and combos online. Easy UPI payment." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css" />
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-08325P1W4G"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-08325P1W4G');
-  </script>
+  <link rel="stylesheet" href="/styles.css" />
 </head>
 <body>
 
@@ -39,7 +30,11 @@
         <span class="brand-name">Fashion</span>
       </button>
       <button id="cartBtn" class="icon-btn" aria-label="Open cart">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+          <line x1="3" y1="6" x2="21" y2="6"/>
+          <path d="M16 10a4 4 0 0 1-8 0"/>
+        </svg>
         <span id="cartCount" class="badge hidden">0</span>
       </button>
     </header>
@@ -51,9 +46,9 @@
           <line x1="21" y1="21" x2="16.65" y2="16.65"/>
         </svg>
         <input id="searchInput" class="search-input" type="text"
-               placeholder="Search watch, dress, earbuds, category..."
+               placeholder="Search shirt, t-shirt, pants, combo..."
                autocomplete="off" />
-        <button id="searchClear" class="search-clear hidden" aria-label="Clear search">✕</button>
+        <button id="searchClear" class="search-clear hidden" aria-label="Clear">&#10005;</button>
       </div>
     </div>
 
@@ -71,9 +66,9 @@
     </main>
   </div>
 
-  <!-- ═══════════════════════════════════════
+  <!-- ══════════════════════════════════════
        PRODUCT DETAIL PAGE
-  ═══════════════════════════════════════ -->
+  ══════════════════════════════════════ -->
   <div id="prodDetail" class="prod-detail hidden">
     <div class="pd-header">
       <button id="pdBackBtn" class="pd-back">
@@ -82,17 +77,19 @@
       </button>
       <span class="brand-mark" style="font-size:18px;">K_K</span>
       <button id="pdCartBtn" class="icon-btn" aria-label="Open cart">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+          <line x1="3" y1="6" x2="21" y2="6"/>
+          <path d="M16 10a4 4 0 0 1-8 0"/>
+        </svg>
         <span id="pdCartCount" class="badge hidden">0</span>
       </button>
     </div>
-
     <div class="pd-scroll" id="pdScroll">
       <div class="pd-img-wrap">
         <img id="pdImage" src="" alt="" />
-        <span id="pdStockBadge" class="stock-badge in pd-img-stock">● In Stock</span>
+        <span id="pdStockBadge" class="stock-badge in pd-img-stock">&#9679; In Stock</span>
       </div>
-
       <div class="pd-info">
         <div id="pdBreadcrumb" class="pd-breadcrumb"></div>
         <h1 id="pdName" class="pd-name"></h1>
@@ -102,258 +99,295 @@
           <span id="pdOff" class="pd-off hidden"></span>
         </div>
       </div>
-
-      <!-- Horizontal sections for all categories & subcategories -->
       <div id="pdHorizSections" class="horiz-sections"></div>
     </div>
-
-    <!-- Sticky bottom buttons -->
     <div class="pd-action-bar">
-      <button id="pdAddCart" class="btn-outline">🛒 Add to Cart</button>
-      <button id="pdBuyNow" class="btn-primary">💬 Buy Now</button>
+      <button id="pdAddCart" class="btn-outline">&#128722; Add to Cart</button>
+      <button id="pdBuyNow" class="btn-primary">Buy Now</button>
     </div>
   </div>
 
-  <!-- CART DRAWER -->
+  <!-- ══════════════════════════════════════
+       CART DRAWER
+  ══════════════════════════════════════ -->
   <div id="cartOverlay" class="overlay hidden">
     <div class="drawer">
       <div class="drawer-head">
         <h2>Your Cart</h2>
-        <button id="cartClose" class="icon-btn">✕</button>
+        <button id="cartClose" class="icon-btn">&#10005;</button>
       </div>
       <div id="cartItems" class="drawer-body"></div>
       <div id="cartFooter" class="drawer-foot hidden">
-        <div class="total"><span>Total</span><span id="cartTotal">₹0</span></div>
-        <button id="checkoutBtn" class="btn-primary full">Order on WhatsApp</button>
+        <div class="total">
+          <span>Total</span>
+          <span id="cartTotal">&#8377;0</span>
+        </div>
+        <button id="checkoutBtn" class="btn-primary full">&#128722; Proceed to Checkout</button>
         <button id="clearCartBtn" class="link">Clear cart</button>
       </div>
     </div>
   </div>
 
-  <!-- ADMIN PIN MODAL -->
+  <!-- ══════════════════════════════════════
+       CHECKOUT MODAL
+  ══════════════════════════════════════ -->
+  <div id="checkoutOverlay" class="overlay center hidden">
+    <div class="checkout-box">
+      <button id="checkoutClose" class="icon-btn close-abs">&#10005;</button>
+
+      <!-- Header -->
+      <div class="checkout-header">
+        <div class="checkout-logo">&#128722;</div>
+        <h2>Checkout</h2>
+        <p class="checkout-sub">Order details complete karein</p>
+      </div>
+
+      <!-- SECTION 1: Contact Details -->
+      <div class="checkout-section">
+        <div class="section-label-row">
+          <span class="section-dot"></span>
+          <h3>Contact Details</h3>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label">Full Name *</label>
+          <input id="ckFullName" class="field" type="text"
+                 placeholder="Apna pura naam daalein" autocomplete="name" />
+        </div>
+
+        <div class="field-group">
+          <label class="field-label">Mobile Number *</label>
+          <div class="mobile-verify-row">
+            <input id="ckMobile" class="field mobile-field" type="tel"
+                   placeholder="10-digit number" maxlength="10"
+                   inputmode="numeric" autocomplete="tel" />
+            <button id="verifyOtpBtn" class="verify-btn">Verify</button>
+          </div>
+          <div id="otpSection" class="otp-section hidden">
+            <div class="otp-row">
+              <input id="otpInput" class="field otp-field" type="text"
+                     placeholder="6-digit OTP" maxlength="6" inputmode="numeric" />
+              <button id="confirmOtpBtn" class="sm-btn">Confirm</button>
+            </div>
+            <p class="otp-hint">&#128274; Demo mode: koi bhi 6-digit code chalega</p>
+          </div>
+          <div id="mobileVerified" class="verified-badge hidden">&#9989; Mobile Verified</div>
+        </div>
+      </div>
+
+      <!-- SECTION 2: Delivery Address -->
+      <div class="checkout-section">
+        <div class="section-label-row">
+          <span class="section-dot"></span>
+          <h3>Delivery Address</h3>
+        </div>
+
+        <div class="row2">
+          <div class="field-group">
+            <label class="field-label">State *</label>
+            <input id="ckState" class="field" type="text"
+                   placeholder="e.g. Rajasthan" autocomplete="address-level1" />
+          </div>
+          <div class="field-group">
+            <label class="field-label">District *</label>
+            <input id="ckDistrict" class="field" type="text"
+                   placeholder="e.g. Jaipur" autocomplete="address-level2" />
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label">Village / City</label>
+          <input id="ckCity" class="field" type="text"
+                 placeholder="Village ya city naam (optional)" />
+        </div>
+
+        <div class="field-group">
+          <label class="field-label">Landmark</label>
+          <input id="ckLandmark" class="field" type="text"
+                 placeholder="Near Bank / Temple / Post Office / School" />
+        </div>
+      </div>
+
+      <!-- SECTION 3: Order Summary -->
+      <div class="checkout-section">
+        <div class="section-label-row">
+          <span class="section-dot"></span>
+          <h3>Order Summary</h3>
+        </div>
+
+        <div id="checkoutItems" class="checkout-items"></div>
+
+        <div class="order-summary">
+          <div class="summary-row">
+            <span>Total Price</span>
+            <span id="sumOriginal">&#8377;0</span>
+          </div>
+          <div class="summary-row">
+            <span>Discount Applied</span>
+            <span id="sumDiscount" class="sum-green">&#8722;&#8377;0</span>
+          </div>
+          <div class="summary-row">
+            <span>Price After Discount</span>
+            <span id="sumAfterDiscount">&#8377;0</span>
+          </div>
+          <div class="summary-row">
+            <span>Delivery Charge</span>
+            <span id="sumDelivery" class="sum-muted">+&#8377;50</span>
+          </div>
+          <div class="summary-divider"></div>
+          <div class="summary-row grand-total">
+            <span>FINAL TOTAL</span>
+            <span id="sumFinal" class="sum-final-amount">&#8377;0</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 4: Pay Now -->
+      <div class="checkout-pay-section">
+        <button id="payNowBtn" class="pay-now-btn">
+          &#128142; Pay Now via UPI
+        </button>
+        <p class="upi-hint">
+          Aapke mobile pe installed UPI app directly khulega &mdash;
+          sirf PIN daalo aur done!
+        </p>
+        <div class="upi-apps">
+          <span class="upi-app-badge">PhonePe</span>
+          <span class="upi-app-badge">Google Pay</span>
+          <span class="upi-app-badge">Paytm</span>
+          <span class="upi-app-badge">Navi</span>
+          <span class="upi-app-badge">BHIM</span>
+        </div>
+        <p class="upi-id-line">UPI ID: <strong>pathaanshab786@ybl</strong></p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       ADMIN PIN MODAL
+  ══════════════════════════════════════ -->
   <div id="adminPin" class="overlay center hidden">
     <div class="pin-box">
-      <button id="pinClose" class="icon-btn close-abs">✕</button>
-      <div class="lock">🔒</div>
+      <button id="pinClose" class="icon-btn close-abs">&#10005;</button>
+      <div class="lock">&#128274;</div>
       <h2>Admin Login</h2>
       <p>Enter PIN to continue</p>
-      <input id="pinInput" type="password" inputmode="numeric" placeholder="••••" class="pin-input" />
+      <input id="pinInput" type="password" inputmode="numeric"
+             placeholder="&#8226;&#8226;&#8226;&#8226;" class="pin-input" />
       <div id="pinError" class="error hidden">Wrong PIN</div>
       <button id="pinUnlock" class="btn-primary full">Unlock</button>
     </div>
   </div>
 
-  <!-- EDIT PRODUCT MODAL -->
+  <!-- ══════════════════════════════════════
+       EDIT PRODUCT MODAL
+  ══════════════════════════════════════ -->
   <div id="editModal" class="overlay center hidden">
     <div class="pin-box wide-box">
-      <button id="editClose" class="icon-btn close-abs">✕</button>
+      <button id="editClose" class="icon-btn close-abs">&#10005;</button>
       <h2>Edit Product</h2>
       <p id="editPName" class="edit-prod-name"></p>
       <div class="row3" style="margin-bottom:12px;">
         <div class="field-group">
-          <label class="field-label">Actual Price (₹)</label>
+          <label class="field-label">Price (&#8377;)</label>
           <input id="editPPrice" class="field" type="number" placeholder="Price" />
         </div>
         <div class="field-group">
-          <label class="field-label">Discount %</label>
+          <label class="field-label">Discount (%)</label>
           <input id="editPDiscount" class="field" type="number" placeholder="0" />
         </div>
         <div class="field-group">
-          <label class="field-label">Extra Charge (₹)</label>
+          <label class="field-label">Extra (&#8377;)</label>
           <input id="editPExtra" class="field" type="number" placeholder="0" />
         </div>
       </div>
       <div class="stock-toggle-row">
-        <span class="field-label">Stock Status</span>
         <label class="toggle-switch">
-          <input type="checkbox" id="editInStock" checked />
+          <input id="editInStock" type="checkbox" checked />
           <span class="toggle-slider"></span>
         </label>
         <span id="editStockLabel" class="stock-label in">In Stock</span>
       </div>
-      <button id="saveEditBtn" class="btn-primary full" style="margin-top:16px;">Save Changes</button>
+      <button id="saveEditBtn" class="btn-primary"
+              style="margin-top:20px;width:100%">Save Changes</button>
     </div>
   </div>
 
-  <!-- ADMIN PANEL -->
+  <!-- ══════════════════════════════════════
+       ADMIN PANEL
+  ══════════════════════════════════════ -->
   <div id="adminPanel" class="admin hidden">
     <div class="admin-inner">
-      <div class="drawer-head">
-        <h2>Admin Panel</h2>
-        <button id="adminClose" class="icon-btn">✕</button>
+
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+        <span class="brand-mark" style="font-size:20px;">K_K Admin</span>
+        <button id="adminClose" class="icon-btn">&#10005;</button>
       </div>
 
-      <section class="card">
-        <h3>Categories</h3>
-        <p class="section-hint">Main categories add, edit, delete karein. Har category ke andar sub-categories bhi manage karein.</p>
+      <!-- Category Management -->
+      <div class="card">
+        <h3>Category Management</h3>
+        <p class="section-hint">Main categories aur sub-categories manage karein</p>
         <div id="catMgmtList"></div>
         <div class="inline-row" style="margin-top:8px;">
-          <input id="newCatName" class="field" placeholder="Nai category ka naam (e.g. SUMMER SALE)" />
-          <button id="addCatBtn" class="btn-primary sm-btn">+ Add</button>
+          <input id="newCatName" class="field"
+                 placeholder="Nayi main category naam" style="margin-bottom:0" />
+          <button id="addCatBtn" class="sm-btn">+ Add</button>
         </div>
-      </section>
+      </div>
 
-      <section class="card">
-        <h3>Add Product</h3>
-        <input id="pName" class="field" placeholder="Product name" />
-        <input id="pImage" class="field" placeholder="Image URL" />
-        <div class="row3" style="margin-bottom:12px;">
+      <!-- Add New Product -->
+      <div class="card">
+        <h3>Add New Product</h3>
+        <div class="field-group">
+          <label class="field-label">Main Category</label>
+          <select id="pMainCat" class="field" onchange="onMainCatChange()"></select>
+        </div>
+        <div id="subCatGroup" class="field-group" style="display:none;">
+          <label class="field-label">Sub Category</label>
+          <select id="pSubCat" class="field"></select>
+        </div>
+        <input id="pName"    class="field" placeholder="Product naam *" />
+        <input id="pImage"   class="field" placeholder="Image URL *" />
+        <div class="row3">
           <div class="field-group">
-            <label class="field-label">Price (₹)</label>
-            <input id="pPrice" class="field" type="number" placeholder="Price" />
+            <label class="field-label">Price (&#8377;) *</label>
+            <input id="pPrice"    class="field" type="number" placeholder="999" />
           </div>
           <div class="field-group">
-            <label class="field-label">Discount %</label>
+            <label class="field-label">Discount (%)</label>
             <input id="pDiscount" class="field" type="number" placeholder="0" />
           </div>
           <div class="field-group">
-            <label class="field-label">Extra (₹)</label>
-            <input id="pExtra" class="field" type="number" placeholder="0" />
-          </div>
-        </div>
-        <div class="row2" style="margin-bottom:12px;">
-          <div class="field-group">
-            <label class="field-label">Main Category</label>
-            <select id="pMainCat" class="field" onchange="onMainCatChange()"></select>
-          </div>
-          <div class="field-group" id="subCatGroup" style="display:none;">
-            <label class="field-label">Sub-Category</label>
-            <select id="pSubCat" class="field"></select>
+            <label class="field-label">Extra (&#8377;)</label>
+            <input id="pExtra"    class="field" type="number" placeholder="0" />
           </div>
         </div>
         <div class="stock-toggle-row" style="margin-bottom:14px;">
-          <span class="field-label">Stock Status</span>
           <label class="toggle-switch">
-            <input type="checkbox" id="pInStock" checked />
+            <input id="pInStock" type="checkbox" checked />
             <span class="toggle-slider"></span>
           </label>
           <span id="pStockLabel" class="stock-label in">In Stock</span>
         </div>
-        <button id="addProductBtn" class="btn-primary full">Add Product</button>
-      </section>
+        <button id="addProductBtn" class="btn-primary full">+ Add Product</button>
+      </div>
 
-      <section class="card">
+      <!-- Products List -->
+      <div class="card">
         <h3 id="adminProdTitle">Products</h3>
         <div class="admin-filter-row">
-          <select id="adminFilterCat" class="field small-field" onchange="renderAdmin()">
-            <option value="ALL">All Categories</option>
-          </select>
+          <select id="adminFilterCat" class="field small-field"
+                  onchange="renderAdminProducts()"></select>
         </div>
         <div id="adminProducts"></div>
-      </section>
+      </div>
+
     </div>
   </div>
 
-  <!-- FIREBASE -->
-  <script type="module">
-    import { initializeApp }    from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
-    import { getAnalytics }     from "https://www.gstatic.com/firebasejs/12.14.0/firebase-analytics.js";
-    import { getFirestore, collection, addDoc, getDocs, doc, deleteDoc, getDoc, setDoc, updateDoc }
-      from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyBXCtwKT6klj3xcZfTBkOIg8YACa_OgWwo",
-      authDomain: "kkfashion-aaa22.firebaseapp.com",
-      projectId: "kkfashion-aaa22",
-      storageBucket: "kkfashion-aaa22.firebasestorage.app",
-      messagingSenderId: "236160837133",
-      appId: "1:236160837133:web:531d73323c958f68849744",
-      measurementId: "G-MFZ80TQVKT"
-    };
-
-    const fbApp = initializeApp(firebaseConfig);
-    getAnalytics(fbApp);
-    const db = getFirestore(fbApp);
-
-    async function fetchSettings() {
-      try {
-        const snap = await getDoc(doc(db, "settings", "storeData"));
-        let cats;
-        if (snap.exists() && snap.data().mainCategories) {
-          cats = snap.data().mainCategories;
-        } else {
-          const old = snap.exists() ? snap.data() : {};
-          cats = [
-            { id: "cat_genz",  name: "GEN-Z PREMIUM", subCategories: old.subCategories      || ["PUMA COMBO","PREMIUM COMBO"] },
-            { id: "cat_other", name: "OTHER",          subCategories: old.otherSubCategories || [] }
-          ];
-          await setDoc(doc(db, "settings", "storeData"), { mainCategories: cats }, { merge: true });
-        }
-        if (window.updateCategoriesFromFirebase) window.updateCategoriesFromFirebase(cats);
-      } catch(e) { console.error(e); }
-    }
-
-    async function fetchProducts() {
-      try {
-        const snap = await getDocs(collection(db, "products"));
-        const list = [];
-        snap.forEach(d => {
-          const data = d.data();
-          list.push({
-            id: d.id,
-            name: data.name,
-            image: data.imageUrl,
-            price: data.price,
-            discount: data.discount || 0,
-            extra: data.extra || 0,
-            mainCategoryId: data.mainCategoryId || (data.mainCategory === "OTHER" ? "cat_other" : "cat_genz"),
-            subCategory: data.subCategory || data.category || "",
-            inStock: data.inStock !== false
-          });
-        });
-        if (window.updateProductsFromFirebase) window.updateProductsFromFirebase(list);
-      } catch(e) { console.error(e); }
-    }
-
-    fetchSettings();
-    fetchProducts();
-
-    window.saveCategoriesToFirebase = async function(cats) {
-      try {
-        await setDoc(doc(db, "settings", "storeData"), { mainCategories: cats }, { merge: true });
-      } catch(e) { console.error(e); }
-    };
-
-    window.deleteProductFromFirebase = async function(id) {
-      try { await deleteDoc(doc(db, "products", id)); } catch(e) { console.error(e); }
-    };
-
-    window.updateProductInFirebase = async function(id, data) {
-      try { await updateDoc(doc(db, "products", id), data); }
-      catch(e) { alert("Update nahi ho paya. Internet check karein!"); }
-    };
-
-    document.getElementById("addProductBtn").addEventListener("click", async () => {
-      const pName    = document.getElementById("pName").value.trim();
-      const pImage   = document.getElementById("pImage").value.trim();
-      const pPrice   = document.getElementById("pPrice").value;
-      const pDisc    = document.getElementById("pDiscount").value;
-      const pExtra   = document.getElementById("pExtra").value;
-      const pCatId   = document.getElementById("pMainCat").value;
-      const pSubCat  = document.getElementById("pSubCat").value || "";
-      const pInStock = document.getElementById("pInStock").checked;
-
-      if (!pName || !pImage || !pPrice) {
-        alert("Naam, Image URL aur Price zaroori hain!");
-        return;
-      }
-      const btn = document.getElementById("addProductBtn");
-      btn.textContent = "Saving...";
-      try {
-        await addDoc(collection(db, "products"), {
-          name: pName, imageUrl: pImage,
-          price: Number(pPrice), discount: Number(pDisc) || 0, extra: Number(pExtra) || 0,
-          mainCategoryId: pCatId, subCategory: pSubCat, category: pSubCat,
-          inStock: pInStock, timestamp: new Date()
-        });
-        alert("Product Live Ho Gaya! 🎉");
-        ["pName","pImage","pPrice","pDiscount","pExtra"].forEach(id => document.getElementById(id).value = "");
-        fetchProducts();
-      } catch(e) { alert("Error: " + e.message); }
-      finally { btn.textContent = "Add Product"; }
-    });
-  </script>
-
-  <script src="app.js"></script>
+  <script defer src="/app.js"></script>
+  <script type="module" src="/src/main.tsx"></script>
 </body>
 </html>
