@@ -4,15 +4,12 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>K_K Fashion — Online Clothing Store</title>
-
   <meta name="google-adsense-account" content="ca-pub-4612907862422691">
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4612907862422691" crossorigin="anonymous"></script>
-
   <meta name="description" content="Shop t-shirts, shirts, pants and combos online. Easy ordering on WhatsApp." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
-
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-08325P1W4G"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
@@ -23,7 +20,7 @@
 </head>
 <body>
 
-  <!-- SPLASH SCREEN -->
+  <!-- SPLASH -->
   <div id="splash" class="splash">
     <div class="splash-glow"></div>
     <div class="splash-oval">
@@ -43,33 +40,25 @@
         <span class="brand-mark">K_K</span>
         <span class="brand-name">Fashion</span>
       </button>
-      <button id="cartBtn" class="icon-btn cart-btn" aria-label="Open cart">
+      <button id="cartBtn" class="icon-btn" aria-label="Open cart">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
         <span id="cartCount" class="badge hidden">0</span>
       </button>
     </header>
 
-    <!-- MAIN CATEGORY BAR (GEN-Z PREMIUM | OTHER) -->
+    <!-- MAIN CATEGORY BAR (dynamic) -->
     <div class="main-cats-wrap">
-      <div class="main-cats">
-        <button id="btnGenz" class="main-cat-btn active" onclick="selectMainCat('GENZ')">
-          <span class="mc-label">GEN-Z PREMIUM</span>
-          <span class="mc-tag">✦ New</span>
-        </button>
-        <button id="btnOther" class="main-cat-btn" onclick="selectMainCat('OTHER')">
-          <span class="mc-label">OTHER</span>
-        </button>
-      </div>
+      <div id="mainCats" class="main-cats"></div>
     </div>
 
-    <!-- SUB-CATEGORY BAR (shown for both GENZ and OTHER) -->
-    <div id="subCatsWrap" class="sub-cats-wrap">
+    <!-- SUB-CATEGORY BAR -->
+    <div id="subCatsWrap" class="sub-cats-wrap hidden-bar">
       <div id="subCats" class="cats"></div>
     </div>
 
     <!-- PRODUCT SECTION -->
     <main class="main">
-      <h2 id="activeTitle" class="section-title">GEN-Z PREMIUM</h2>
+      <h2 id="activeTitle" class="section-title"></h2>
       <div id="products" class="grid"></div>
     </main>
   </div>
@@ -79,7 +68,7 @@
     <div class="drawer">
       <div class="drawer-head">
         <h2>Your Cart</h2>
-        <button id="cartClose" class="icon-btn" aria-label="Close cart">✕</button>
+        <button id="cartClose" class="icon-btn">✕</button>
       </div>
       <div id="cartItems" class="drawer-body"></div>
       <div id="cartFooter" class="drawer-foot hidden">
@@ -93,7 +82,7 @@
   <!-- ADMIN PIN MODAL -->
   <div id="adminPin" class="overlay center hidden">
     <div class="pin-box">
-      <button id="pinClose" class="icon-btn close-abs" aria-label="Close">✕</button>
+      <button id="pinClose" class="icon-btn close-abs">✕</button>
       <div class="lock">🔒</div>
       <h2>Admin Login</h2>
       <p>Enter PIN to continue</p>
@@ -106,7 +95,7 @@
   <!-- EDIT PRODUCT MODAL -->
   <div id="editModal" class="overlay center hidden">
     <div class="pin-box wide-box">
-      <button id="editClose" class="icon-btn close-abs" aria-label="Close">✕</button>
+      <button id="editClose" class="icon-btn close-abs">✕</button>
       <h2>Edit Product</h2>
       <p id="editPName" class="edit-prod-name"></p>
       <div class="row3" style="margin-bottom:12px;">
@@ -116,11 +105,11 @@
         </div>
         <div class="field-group">
           <label class="field-label">Discount %</label>
-          <input id="editPDiscount" class="field" type="number" placeholder="Discount %" />
+          <input id="editPDiscount" class="field" type="number" placeholder="0" />
         </div>
         <div class="field-group">
           <label class="field-label">Extra Charge (₹)</label>
-          <input id="editPExtra" class="field" type="number" placeholder="Extra ₹" />
+          <input id="editPExtra" class="field" type="number" placeholder="0" />
         </div>
       </div>
       <div class="stock-toggle-row">
@@ -140,28 +129,17 @@
     <div class="admin-inner">
       <div class="drawer-head">
         <h2>Admin Panel</h2>
-        <button id="adminClose" class="icon-btn" aria-label="Close admin">✕</button>
+        <button id="adminClose" class="icon-btn">✕</button>
       </div>
 
-      <!-- GEN-Z PREMIUM SUB-CATEGORIES -->
+      <!-- CATEGORY MANAGEMENT -->
       <section class="card">
-        <h3>GEN-Z PREMIUM — Sub-Categories</h3>
-        <p class="section-hint">Ye sub-categories <strong>GEN-Z PREMIUM</strong> ke andar dikhti hain</p>
-        <div id="adminGenzSubCats" class="chips"></div>
-        <div class="row">
-          <input id="newGenzSubCat" class="field" placeholder="New sub-category (e.g. PUMA COMBO)" />
-          <button id="addGenzSubCatBtn" class="btn-primary">+ Add</button>
-        </div>
-      </section>
-
-      <!-- OTHER SUB-CATEGORIES -->
-      <section class="card">
-        <h3>OTHER — Sub-Categories</h3>
-        <p class="section-hint">Ye sub-categories <strong>OTHER</strong> ke andar dikhti hain</p>
-        <div id="adminOtherSubCats" class="chips"></div>
-        <div class="row">
-          <input id="newOtherSubCat" class="field" placeholder="New sub-category (e.g. ACCESSORIES)" />
-          <button id="addOtherSubCatBtn" class="btn-primary">+ Add</button>
+        <h3>Categories</h3>
+        <p class="section-hint">Main categories add, edit, delete karein. Har category ke andar sub-categories bhi manage karein.</p>
+        <div id="catMgmtList"></div>
+        <div class="inline-row" style="margin-top:8px;">
+          <input id="newCatName" class="field" placeholder="Nai category ka naam (e.g. SUMMER SALE)" />
+          <button id="addCatBtn" class="btn-primary sm-btn">+ Add</button>
         </div>
       </section>
 
@@ -172,27 +150,24 @@
         <input id="pImage" class="field" placeholder="Image URL" />
         <div class="row3" style="margin-bottom:12px;">
           <div class="field-group">
-            <label class="field-label">Actual Price (₹)</label>
+            <label class="field-label">Price (₹)</label>
             <input id="pPrice" class="field" type="number" placeholder="Price" />
           </div>
           <div class="field-group">
             <label class="field-label">Discount %</label>
-            <input id="pDiscount" class="field" type="number" placeholder="Discount %" />
+            <input id="pDiscount" class="field" type="number" placeholder="0" />
           </div>
           <div class="field-group">
-            <label class="field-label">Extra Charge (₹)</label>
-            <input id="pExtra" class="field" type="number" placeholder="Extra ₹" />
+            <label class="field-label">Extra (₹)</label>
+            <input id="pExtra" class="field" type="number" placeholder="0" />
           </div>
         </div>
         <div class="row2" style="margin-bottom:12px;">
           <div class="field-group">
             <label class="field-label">Main Category</label>
-            <select id="pMainCat" class="field" onchange="onMainCatChange()">
-              <option value="GENZ">GEN-Z PREMIUM</option>
-              <option value="OTHER">OTHER</option>
-            </select>
+            <select id="pMainCat" class="field" onchange="onMainCatChange()"></select>
           </div>
-          <div class="field-group" id="subCatGroup">
+          <div class="field-group" id="subCatGroup" style="display:none;">
             <label class="field-label">Sub-Category</label>
             <select id="pSubCat" class="field"></select>
           </div>
@@ -212,10 +187,8 @@
       <section class="card">
         <h3 id="adminProdTitle">Products</h3>
         <div class="admin-filter-row">
-          <select id="adminFilterMain" class="field small-field" onchange="renderAdmin()">
+          <select id="adminFilterCat" class="field small-field" onchange="renderAdmin()">
             <option value="ALL">All Categories</option>
-            <option value="GENZ">GEN-Z PREMIUM</option>
-            <option value="OTHER">OTHER</option>
           </select>
         </div>
         <div id="adminProducts"></div>
@@ -225,8 +198,8 @@
 
   <!-- FIREBASE -->
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
-    import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-analytics.js";
+    import { initializeApp }    from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
+    import { getAnalytics }     from "https://www.gstatic.com/firebasejs/12.14.0/firebase-analytics.js";
     import { getFirestore, collection, addDoc, getDocs, doc, deleteDoc, getDoc, setDoc, updateDoc }
       from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
 
@@ -240,125 +213,96 @@
       measurementId: "G-MFZ80TQVKT"
     };
 
-    const app = initializeApp(firebaseConfig);
-    const analytics = getAnalytics(app);
-    const db = getFirestore(app);
+    const fbApp = initializeApp(firebaseConfig);
+    getAnalytics(fbApp);
+    const db = getFirestore(fbApp);
+
+    async function fetchSettings() {
+      try {
+        const snap = await getDoc(doc(db, "settings", "storeData"));
+        let cats;
+        if (snap.exists() && snap.data().mainCategories) {
+          cats = snap.data().mainCategories;
+        } else {
+          const old = snap.exists() ? snap.data() : {};
+          cats = [
+            { id: "cat_genz",  name: "GEN-Z PREMIUM", subCategories: old.subCategories      || ["PUMA COMBO","PREMIUM COMBO"] },
+            { id: "cat_other", name: "OTHER",          subCategories: old.otherSubCategories || [] }
+          ];
+          await setDoc(doc(db, "settings", "storeData"), { mainCategories: cats }, { merge: true });
+        }
+        if (window.updateCategoriesFromFirebase) window.updateCategoriesFromFirebase(cats);
+      } catch(e) { console.error(e); }
+    }
 
     async function fetchProducts() {
       try {
-        const querySnapshot = await getDocs(collection(db, "products"));
-        const fbProducts = [];
-        querySnapshot.forEach((d) => {
+        const snap = await getDocs(collection(db, "products"));
+        const list = [];
+        snap.forEach(d => {
           const data = d.data();
-          fbProducts.push({
+          list.push({
             id: d.id,
             name: data.name,
             image: data.imageUrl,
             price: data.price,
             discount: data.discount || 0,
             extra: data.extra || 0,
-            mainCategory: data.mainCategory || "GENZ",
+            mainCategoryId: data.mainCategoryId || (data.mainCategory === "OTHER" ? "cat_other" : "cat_genz"),
             subCategory: data.subCategory || data.category || "",
             inStock: data.inStock !== false
           });
         });
-        if (window.updateProductsFromFirebase) window.updateProductsFromFirebase(fbProducts);
-      } catch (error) {
-        console.error("Error fetching products:", error);
-      }
+        if (window.updateProductsFromFirebase) window.updateProductsFromFirebase(list);
+      } catch(e) { console.error(e); }
     }
 
-    async function fetchSettings() {
-      try {
-        const catDoc = await getDoc(doc(db, "settings", "storeData"));
-        if (catDoc.exists()) {
-          const data = catDoc.data();
-          const genzSubs  = data.subCategories      || data.categories || ["PUMA COMBO", "PREMIUM COMBO"];
-          const otherSubs = data.otherSubCategories || [];
-          if (window.updateSettingsFromFirebase) window.updateSettingsFromFirebase(genzSubs, otherSubs);
-        } else {
-          const defaultGenz  = ["PUMA COMBO", "PREMIUM COMBO"];
-          const defaultOther = [];
-          await setDoc(doc(db, "settings", "storeData"), {
-            subCategories: defaultGenz,
-            otherSubCategories: defaultOther
-          });
-          if (window.updateSettingsFromFirebase) window.updateSettingsFromFirebase(defaultGenz, defaultOther);
-        }
-      } catch (error) {
-        console.error("Error fetching settings:", error);
-      }
-    }
-
-    fetchProducts();
     fetchSettings();
+    fetchProducts();
 
-    window.saveSettingsToFirebase = async function(genzSubs, otherSubs) {
+    window.saveCategoriesToFirebase = async function(cats) {
       try {
-        await setDoc(doc(db, "settings", "storeData"), {
-          subCategories: genzSubs,
-          otherSubCategories: otherSubs
-        }, { merge: true });
-      } catch(error) {
-        console.error("Error saving settings:", error);
-      }
+        await setDoc(doc(db, "settings", "storeData"), { mainCategories: cats }, { merge: true });
+      } catch(e) { console.error(e); }
     };
 
-    window.deleteProductFromFirebase = async function(productId) {
-      try {
-        await deleteDoc(doc(db, "products", productId));
-      } catch (error) {
-        console.error("Delete error:", error);
-      }
+    window.deleteProductFromFirebase = async function(id) {
+      try { await deleteDoc(doc(db, "products", id)); } catch(e) { console.error(e); }
     };
 
-    window.updateProductInFirebase = async function(productId, newData) {
-      try {
-        await updateDoc(doc(db, "products", productId), newData);
-      } catch (error) {
-        console.error("Update error:", error);
-        alert("Update nahi ho paya. Internet check karein!");
-      }
+    window.updateProductInFirebase = async function(id, data) {
+      try { await updateDoc(doc(db, "products", id), data); }
+      catch(e) { alert("Update nahi ho paya. Internet check karein!"); }
     };
 
     document.getElementById("addProductBtn").addEventListener("click", async () => {
-      const pName     = document.getElementById("pName").value.trim();
-      const pImage    = document.getElementById("pImage").value.trim();
-      const pPrice    = document.getElementById("pPrice").value;
-      const pDiscount = document.getElementById("pDiscount").value;
-      const pExtra    = document.getElementById("pExtra").value;
-      const pMainCat  = document.getElementById("pMainCat").value;
-      const pSubCat   = document.getElementById("pSubCat").value || "";
-      const pInStock  = document.getElementById("pInStock").checked;
+      const pName    = document.getElementById("pName").value.trim();
+      const pImage   = document.getElementById("pImage").value.trim();
+      const pPrice   = document.getElementById("pPrice").value;
+      const pDisc    = document.getElementById("pDiscount").value;
+      const pExtra   = document.getElementById("pExtra").value;
+      const pCatId   = document.getElementById("pMainCat").value;
+      const pSubCat  = document.getElementById("pSubCat").value || "";
+      const pInStock = document.getElementById("pInStock").checked;
 
       if (!pName || !pImage || !pPrice) {
-        alert("Pehle Product ka Naam, Image URL aur Price daalein!");
+        alert("Naam, Image URL aur Price zaroori hain!");
         return;
       }
-
       const btn = document.getElementById("addProductBtn");
       btn.textContent = "Saving...";
       try {
         await addDoc(collection(db, "products"), {
-          name: pName,
-          imageUrl: pImage,
-          price: Number(pPrice),
-          discount: Number(pDiscount) || 0,
-          extra: Number(pExtra) || 0,
-          mainCategory: pMainCat,
-          subCategory: pSubCat,
-          category: pSubCat,
-          inStock: pInStock,
-          timestamp: new Date()
+          name: pName, imageUrl: pImage,
+          price: Number(pPrice), discount: Number(pDisc) || 0, extra: Number(pExtra) || 0,
+          mainCategoryId: pCatId, subCategory: pSubCat, category: pSubCat,
+          inStock: pInStock, timestamp: new Date()
         });
         alert("Product Live Ho Gaya! 🎉");
         ["pName","pImage","pPrice","pDiscount","pExtra"].forEach(id => document.getElementById(id).value = "");
         fetchProducts();
-      } catch (e) {
-        alert("Error: " + e.message);
-      } finally {
-        btn.textContent = "Add Product";
-      }
+      } catch(e) { alert("Error: " + e.message); }
+      finally { btn.textContent = "Add Product"; }
     });
   </script>
 
