@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════
-   K_K FASHION — app.js (FINAL - UTR EXACT 12 DIGITS FIX)
+   K_K FASHION — app.js (FINAL - VISIBLE UTR BOX FIX)
 ═══════════════════════════════════════════════════════ */
 
 const load = (k, fb) => { try { const r = localStorage.getItem(k); return r ? JSON.parse(r) : fb; } catch { return fb; } };
@@ -319,7 +319,9 @@ function resetCheckoutUI() {
   $("step1NextBtn").classList.remove("hidden");
   $("step2PayBtn").classList.add("hidden");
   $("utrSection").classList.add("hidden"); 
-  $("chkUtr").value = "";
+  
+  if($("chkUtr")) $("chkUtr").value = "";
+  if($("dynamicUtrInput")) $("dynamicUtrInput").value = "";
   
   // Clear timer if running
   if(window.paymentInterval) clearInterval(window.paymentInterval);
@@ -477,33 +479,25 @@ $("step2PayBtn").onclick = () => {
   $("step2PayBtn").classList.add("hidden");
   $("utrSection").classList.remove("hidden");
 
-  // Fix Scrolling Issue dynamically
+  // Fix Scrolling issue by allowing native scroll
   $("checkoutStep2").style.overflowY = "auto";
-  $("checkoutStep2").style.maxHeight = "65vh"; // Taki footer ke liye jagah bache
-  $("checkoutStep2").style.paddingBottom = "20px";
+  $("checkoutStep2").style.paddingBottom = "50px"; 
 
-  // STRICT 12-DIGIT NUMBER VALIDATION ON UTR INPUT
-  let utrInput = $("chkUtr");
-  if(utrInput) {
-      utrInput.type = "tel"; // Force numeric keypad on mobile
-      utrInput.maxLength = 12; // HTML length limit
-      utrInput.placeholder = "Enter 12-Digit UTR No.";
-      utrInput.oninput = function() {
-          // Sirf numbers (0-9) allow karega aur baki sab remove kar dega
-          this.value = this.value.replace(/[^0-9]/g, '').slice(0, 12);
-      };
-  }
+  // Hide original UTR box completely so we don't have duplicates
+  let origUtrBox = $("chkUtr");
+  if (origUtrBox) origUtrBox.style.display = "none";
 
-  // Inject QR Code Box dynamically
-  let qrContainer = document.getElementById("qrDisplayBox");
-  if (!qrContainer) {
-      qrContainer = document.createElement("div");
-      qrContainer.id = "qrDisplayBox";
-      qrContainer.style.cssText = "position:relative; text-align:center; background:#fff; padding:15px; border-radius:12px; margin-bottom:20px; border: 1px solid #e0e0e0; box-shadow: 0 4px 6px rgba(0,0,0,0.05);";
-      
-      // Insert right before UTR input box
-      $("utrSection").insertBefore(qrContainer, $("utrSection").firstChild);
-  }
+  // Remove existing QR box if present
+  let existingQr = document.getElementById("qrDisplayBox");
+  if(existingQr) existingQr.remove();
+
+  // Inject NEW QR Code Box dynamically
+  let qrContainer = document.createElement("div");
+  qrContainer.id = "qrDisplayBox";
+  qrContainer.style.cssText = "position:relative; text-align:center; background:#fff; padding:15px; border-radius:12px; margin-bottom:20px; border: 1px solid #e0e0e0; box-shadow: 0 4px 6px rgba(0,0,0,0.05);";
+  
+  // Insert right before UTR section's first child
+  $("utrSection").insertBefore(qrContainer, $("utrSection").firstChild);
   
   qrContainer.innerHTML = `
       <button id="qrBackBtn" style="position:absolute; top:10px; left:10px; background:var(--bg); border:1px solid #ddd; font-size:18px; cursor:pointer; color:#333; padding:5px 10px; border-radius:6px; font-weight:bold; display:flex; align-items:center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); z-index:10;">
@@ -526,7 +520,15 @@ $("step2PayBtn").onclick = () => {
       <div style="font-size:12px; color:#d9534f; margin-top:5px; padding:8px; background:#fff3f3; border-radius:6px; font-weight:bold;">
         ⚠️ Niche wale box me strictly 12-digit ka UTR number dalein!
       </div>
+
+      <input type="tel" id="dynamicUtrInput" placeholder="Enter 12-Digit UTR No." maxlength="12" style="width:100%; padding:14px; margin-top:15px; border:2px solid #ccc; border-radius:8px; font-size:16px; text-align:center; font-weight:bold; box-sizing:border-box; letter-spacing:2px; color:#111; background:#fff;" />
   `;
+
+  // Strict 12 digit validation on dynamic input
+  let dynUtr = $("dynamicUtrInput");
+  dynUtr.oninput = function() {
+      this.value = this.value.replace(/[^0-9]/g, '').slice(0, 12);
+  };
 
   // QR Box Back Button Logic
   document.getElementById("qrBackBtn").onclick = function() {
@@ -569,7 +571,16 @@ $("step2PayBtn").onclick = () => {
 
 // FINAL CONFIRM UTR & SAVE TO FIREBASE
 $("confirmOrderBtn").onclick = () => {
-  const utrValue = $("chkUtr").value.trim();
+  // Grab UTR from our dynamically visible box, fallback to old box if needed
+  let utrValue = "";
+  let dynUtr = $("dynamicUtrInput");
+  let oldUtr = $("chkUtr");
+
+  if (dynUtr) {
+      utrValue = dynUtr.value.trim();
+  } else if (oldUtr) {
+      utrValue = oldUtr.value.trim();
+  }
   
   // STRICT CHECK: Ensure length is exactly 12 and contains only digits
   if (utrValue.length !== 12 || !/^\d+$/.test(utrValue)) {
@@ -624,7 +635,7 @@ $("confirmOrderBtn").onclick = () => {
       }
     });
   } else {
-      // Falback if firebase function not present
+      // Fallback if firebase function not present
       showStep3Success(payMethod, amountPaid, balanceDue);
   }
 };
