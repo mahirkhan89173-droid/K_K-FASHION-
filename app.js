@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════
-   K_K FASHION — app.js
+   K_K FASHION — app.js (100% COMPLETE FIXED VERSION)
 ═══════════════════════════════════════════════════════ */
 
 const load = (k, fb) => { try { const r = localStorage.getItem(k); return r ? JSON.parse(r) : fb; } catch { return fb; } };
@@ -157,7 +157,7 @@ function renderProducts() {
    PRODUCT DETAIL PAGE
 ════════════════════════════════════ */
 function openProductDetail(p) {
-  lockScroll(); // Lock background
+  lockScroll();
   currentDetailProduct = p; const price = finalPrice(p), inStock = p.inStock !== false, cat = getCat(p.mainCategoryId);
   $("pdImage").src = p.image; $("pdImage").alt = p.name;
   const badge = $("pdStockBadge"); badge.textContent = inStock ? "● In Stock" : "● Out of Stock"; badge.className = "stock-badge pd-img-stock " + (inStock ? "in" : "out");
@@ -178,7 +178,7 @@ function closeProductDetail() {
   const detail = $("prodDetail"); detail.classList.add("closing");
   detail.addEventListener("animationend", () => {
     detail.classList.add("hidden"); detail.classList.remove("closing"); currentDetailProduct = null;
-    unlockScroll(); // Unlock background
+    unlockScroll();
   }, { once: true });
 }
 $("pdBackBtn").onclick = closeProductDetail;
@@ -228,7 +228,7 @@ function directBuyCheckout(p) {
 $("checkoutBtn").onclick = () => { if (!cart.length) return; $("cartOverlay").classList.add("hidden"); openCheckout(); };
 
 function openCheckout() {
-  lockScroll(); // Keep background locked securely
+  lockScroll(); 
   const total = cart.reduce((s, i) => s + finalPrice(i.product) * i.qty, 0);
   $("chkTotalAmt").textContent = "₹" + total;
   $("checkoutOverlay").classList.remove("hidden");
@@ -240,8 +240,8 @@ $("closeCheckout").onclick = () => { $("checkoutOverlay").classList.add("hidden"
 
 $("step1NextBtn").onclick = () => {
   const name = $("chkName").value.trim(), mobile = $("chkMobile").value.trim(), address = $("chkAddress").value.trim(), state = $("chkState").value.trim(), pincode = $("chkPincode").value.trim(), landmark = $("chkLandmark").value.trim();
-  if(!name || !mobile || !address || !state || !pincode) { alert("Kripya sabhi zaroori jankari (Name, Mobile, Address, State, Pincode) bharein!"); return; }
-  if(mobile.length < 10 || isNaN(mobile)) { alert("Mobile number galat hai! Kripya 10-digit number daalein."); return; }
+  if(!name || !mobile || !address || !state || !pincode) { alert("Kripya sabhi zaroori jankari bharein!"); return; }
+  if(mobile.length < 10 || isNaN(mobile)) { alert("Mobile number galat hai!"); return; }
 
   const total = cart.reduce((s, i) => s + finalPrice(i.product) * i.qty, 0);
   const orderData = { name, mobile, address, state, pincode, landmark, items: cart, totalAmount: total, status: "Recent" };
@@ -260,7 +260,7 @@ $("step1NextBtn").onclick = () => {
         if (window.fetchOrdersFromFirebase) window.fetchOrdersFromFirebase();
       }
     });
-  } else { alert("Firebase connection error."); btn.textContent = "Save Address & Place Order"; }
+  } else { alert("Firebase error."); btn.textContent = "Save Address & Place Order"; }
 };
 
 /* ════════════════════════════════════
@@ -287,16 +287,38 @@ $("adminClose").onclick = () => { $("adminPanel").classList.add("hidden"); unloc
 
 function saveCategories() { if (window.saveCategoriesToFirebase) window.saveCategoriesToFirebase(mainCategories); }
 
+// --- FIXED: RESTORED CATEGORY MANAGEMENT ---
 function renderCatMgmt() {
   const list = $("catMgmtList"); list.innerHTML = "";
   mainCategories.forEach(cat => {
     const card = document.createElement("div"); card.className = "cat-mgmt-card";
-    card.innerHTML = `<div class="cat-mgmt-head"><span class="cat-mgmt-name">${cat.name}</span><div class="cat-mgmt-actions"><button class="cat-action-btn edit-cat-btn">✏️ Edit</button><button class="cat-action-btn del del-cat-btn">🗑️ Delete</button></div></div>`;
+    card.innerHTML = `<div class="cat-mgmt-head"><span class="cat-mgmt-name">${cat.name}</span><div class="cat-mgmt-actions"><button class="cat-action-btn edit-cat-btn">✏️ Edit</button><button class="cat-action-btn del del-cat-btn">🗑️ Delete</button></div></div>
+      <div class="cat-sub-section"><div class="cat-sub-label">SUB-CATEGORIES</div><div class="chips" id="subChips_${cat.id}"></div><div class="inline-row"><input class="field sub-inp" id="subInp_${cat.id}" placeholder="Sub-category naam" /><button class="btn-primary sm-btn add-sub-btn" data-id="${cat.id}">+ Add</button></div></div>`;
+    const chipsEl = card.querySelector(`#subChips_${cat.id}`);
+    (cat.subCategories || []).forEach(sub => {
+      const chip = document.createElement("span"); chip.className = "chip"; chip.innerHTML = `${sub}<button class="chip-btn edt">✏️</button><button class="chip-btn del">✕</button>`;
+      chip.querySelector(".edt").onclick = () => { const n = prompt(`"${sub}" ka naya naam:`, sub); if (!n || !n.trim()) return; const idx = cat.subCategories.indexOf(sub); if (idx > -1) cat.subCategories[idx] = n.trim().toUpperCase(); saveCategories(); renderAdmin(); if (activeMainCatId === cat.id) { activeSubCat = "All"; renderSubCats(); renderProducts(); } };
+      chip.querySelector(".del").onclick = () => { if (!confirm(`"${sub}" delete karein?`)) return; cat.subCategories = cat.subCategories.filter(x => x !== sub); saveCategories(); renderAdmin(); if (activeMainCatId === cat.id) { activeSubCat = "All"; renderSubCats(); renderProducts(); } };
+      chipsEl.appendChild(chip);
+    });
+    card.querySelector(".add-sub-btn").onclick = () => { const inp = card.querySelector(`#subInp_${cat.id}`); const v = inp.value.trim().toUpperCase(); if (!v) return; if ((cat.subCategories || []).some(x => x.toUpperCase() === v)) { alert("Pehle se exist karti hai!"); return; } cat.subCategories = [...(cat.subCategories || []), v]; saveCategories(); inp.value = ""; renderAdmin(); if (activeMainCatId === cat.id) renderSubCats(); };
+    card.querySelector(".edit-cat-btn").onclick = () => { const n = prompt(`"${cat.name}" ka naya naam:`, cat.name); if (!n || !n.trim()) return; cat.name = n.trim().toUpperCase(); saveCategories(); renderAdmin(); renderMainCats(); };
+    card.querySelector(".del-cat-btn").onclick = () => { if (!confirm(`"${cat.name}" category delete karein?`)) return; mainCategories = mainCategories.filter(c => c.id !== cat.id); if (activeMainCatId === cat.id) { activeMainCatId = mainCategories.length > 0 ? mainCategories[0].id : null; activeSubCat = "All"; } saveCategories(); renderAdmin(); renderMainCats(); renderSubCats(); renderProducts(); };
     list.appendChild(card);
   });
 }
 
-// ═════ ADMIN ORDER MANAGEMENT (NEW) ═════
+// --- FIXED: ADD CATEGORY BUTTON ---
+$("addCatBtn").onclick = () => { const inp = $("newCatName"); const v = inp.value.trim().toUpperCase(); if (!v) return; if (mainCategories.some(c => c.name.toUpperCase() === v)) { alert("Pehle se exist karti hai!"); return; } mainCategories.push({ id: genId(), name: v, subCategories: [] }); saveCategories(); inp.value = ""; renderAdmin(); renderMainCats(); };
+
+function syncAddProductDropdowns() { const pMainCat = $("pMainCat"); pMainCat.innerHTML = ""; mainCategories.forEach(cat => { const o = document.createElement("option"); o.value = cat.id; o.textContent = cat.name; pMainCat.appendChild(o); }); onMainCatChange(); }
+window.onMainCatChange = function() { const cat = getCat($("pMainCat").value); const group = $("subCatGroup"); const pSub = $("pSubCat"); if (!cat || !cat.subCategories || cat.subCategories.length === 0) { group.style.display = "none"; return; } group.style.display = ""; pSub.innerHTML = ""; cat.subCategories.forEach(s => { const o = document.createElement("option"); o.value = s; o.textContent = s; pSub.appendChild(o); }); };
+$("pInStock").addEventListener("change", function() { const lbl = $("pStockLabel"); lbl.textContent = this.checked ? "In Stock" : "Out of Stock"; lbl.className = "stock-label " + (this.checked ? "in" : "out"); });
+
+function syncFilterDropdown() { const sel = $("adminFilterCat"); sel.innerHTML = '<option value="ALL">All Categories</option>'; mainCategories.forEach(cat => { const o = document.createElement("option"); o.value = cat.id; o.textContent = cat.name; sel.appendChild(o); }); }
+
+
+// ═════ ADMIN ORDER MANAGEMENT ═════
 let liveOrders = [];
 let currentOrderTab = "Recent";
 
@@ -343,19 +365,17 @@ function renderOrdersByTab() {
     list.appendChild(div);
   });
 
-  // Attach status change event
   document.querySelectorAll(".status-select").forEach(sel => {
     sel.addEventListener("change", async (e) => {
       const id = e.target.getAttribute("data-id");
       const newStatus = e.target.value;
       const order = liveOrders.find(x => x.id === id);
       if(order) order.status = newStatus;
-      renderOrdersByTab(); // Re-render to move to correct tab
+      renderOrdersByTab(); 
       if (window.updateOrderStatusInFirebase) await window.updateOrderStatusInFirebase(id, newStatus);
     });
   });
 
-  // Attach delete event
   document.querySelectorAll(".del-order-btn").forEach(btn => {
     btn.addEventListener("click", async (e) => {
       const id = e.currentTarget.getAttribute("data-id");
@@ -367,7 +387,6 @@ function renderOrdersByTab() {
   });
 }
 
-// Hook up Order Tabs
 document.querySelectorAll(".admin-tab").forEach(tab => {
   tab.addEventListener("click", (e) => {
     document.querySelectorAll(".admin-tab").forEach(t => t.classList.remove("active"));
@@ -377,9 +396,48 @@ document.querySelectorAll(".admin-tab").forEach(tab => {
   });
 });
 
+// --- FIXED: RESTORED PRODUCT LIST ---
+function renderAdminProducts() {
+  $("adminProdTitle").textContent = `Products (${products.length})`; const filterCat = $("adminFilterCat").value || "ALL"; const list = $("adminProducts"); list.innerHTML = "";
+  const filtered = filterCat === "ALL" ? products : products.filter(p => p.mainCategoryId === filterCat);
+  filtered.forEach(p => {
+    const price = finalPrice(p), inStock = p.inStock !== false, cat = getCat(p.mainCategoryId), catName = cat ? cat.name : "—", subLabel = p.subCategory ? ` · ${p.subCategory}` : "";
+    const el = document.createElement("div"); el.className = "admin-prod";
+    el.innerHTML = `<img src="${p.image}" alt="${p.name}" /><div class="ap-info"><div class="ap-name">${p.name}</div><div class="ap-sub">${catName}${subLabel}</div><div class="ap-price">₹${price} ${p.discount > 0 ? `(${p.discount}% off)` : ''} · <span style="color:${inStock ? '#4cc968' : '#e05555'}">${inStock ? 'In Stock' : 'Out of Stock'}</span></div></div><div class="ap-actions"><button class="edit-btn">✏️</button><button class="trash">🗑️</button></div>`;
+    el.querySelector(".edit-btn").onclick = () => openEditModal(p); el.querySelector(".trash").onclick = () => { if (!confirm("Delete karein?")) return; products = products.filter(x => x.id !== p.id); renderProducts(); renderAdmin(); if (window.deleteProductFromFirebase) window.deleteProductFromFirebase(p.id); }; list.appendChild(el);
+  });
+}
+
+// --- FIXED: RENDER ADMIN & RESTORE PIN CHANGE ---
 window.renderAdmin = function() {
-  renderCatMgmt();
+  renderCatMgmt(); 
+  syncAddProductDropdowns(); 
+  syncFilterDropdown(); 
+  renderAdminProducts();
+  
+  if ($("updatePinBtn")) { 
+    $("updatePinBtn").onclick = () => { 
+      const newPin = $("newAdminPin").value.trim(); 
+      if (newPin.length < 4) { alert("PIN kam se kam 4 digit ka hona chahiye!"); return; } 
+      ADMIN_PIN = newPin; save("admin_pin", ADMIN_PIN); 
+      alert("Success! Naya Admin PIN set ho gaya hai: " + ADMIN_PIN); 
+      $("newAdminPin").value = ""; 
+    }; 
+  }
+  
   if (window.fetchOrdersFromFirebase) window.fetchOrdersFromFirebase();
+};
+
+// --- FIXED: EDIT MODAL LOGIC ---
+function openEditModal(p) { editingProductId = p.id; $("editPName").textContent = p.name; $("editPPrice").value = p.price; $("editPDiscount").value = p.discount || 0; $("editPExtra").value = p.extra || 0; const inStock = p.inStock !== false; $("editInStock").checked = inStock; const lbl = $("editStockLabel"); lbl.textContent = inStock ? "In Stock" : "Out of Stock"; lbl.className = "stock-label " + (inStock ? "in" : "out"); $("editModal").classList.remove("hidden"); }
+$("editInStock").addEventListener("change", function() { const lbl = $("editStockLabel"); lbl.textContent = this.checked ? "In Stock" : "Out of Stock"; lbl.className = "stock-label " + (this.checked ? "in" : "out"); });
+$("editClose").onclick = () => { $("editModal").classList.add("hidden"); editingProductId = null; };
+$("saveEditBtn").onclick = () => {
+  if (!editingProductId) return; const newPrice = Number($("editPPrice").value), newDiscount = Number($("editPDiscount").value) || 0, newExtra = Number($("editPExtra").value) || 0, newInStock = $("editInStock").checked;
+  if (!newPrice || newPrice <= 0) { alert("Sahi price daalein!"); return; } const idx = products.findIndex(p => p.id === editingProductId);
+  if (idx > -1) { products[idx] = { ...products[idx], price: newPrice, discount: newDiscount, extra: newExtra, inStock: newInStock }; renderProducts(); renderAdmin(); }
+  if (window.updateProductInFirebase) { window.updateProductInFirebase(editingProductId, { price: newPrice, discount: newDiscount, extra: newExtra, inStock: newInStock }); }
+  $("editModal").classList.add("hidden"); editingProductId = null;
 };
 
 /* ════════════════════════════════════
