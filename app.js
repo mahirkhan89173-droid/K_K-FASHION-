@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════
-   K_K FASHION — app.js (FINAL - WITH BACK BUTTONS FIX)
+   K_K FASHION — app.js (FINAL - UTR EXACT 12 DIGITS FIX)
 ═══════════════════════════════════════════════════════ */
 
 const load = (k, fb) => { try { const r = localStorage.getItem(k); return r ? JSON.parse(r) : fb; } catch { return fb; } };
@@ -482,6 +482,18 @@ $("step2PayBtn").onclick = () => {
   $("checkoutStep2").style.maxHeight = "65vh"; // Taki footer ke liye jagah bache
   $("checkoutStep2").style.paddingBottom = "20px";
 
+  // STRICT 12-DIGIT NUMBER VALIDATION ON UTR INPUT
+  let utrInput = $("chkUtr");
+  if(utrInput) {
+      utrInput.type = "tel"; // Force numeric keypad on mobile
+      utrInput.maxLength = 12; // HTML length limit
+      utrInput.placeholder = "Enter 12-Digit UTR No.";
+      utrInput.oninput = function() {
+          // Sirf numbers (0-9) allow karega aur baki sab remove kar dega
+          this.value = this.value.replace(/[^0-9]/g, '').slice(0, 12);
+      };
+  }
+
   // Inject QR Code Box dynamically
   let qrContainer = document.getElementById("qrDisplayBox");
   if (!qrContainer) {
@@ -511,7 +523,9 @@ $("step2PayBtn").onclick = () => {
           ${UPI_ID} <span style="font-size:12px; background:var(--primary); color:#fff; padding:3px 8px; border-radius:4px;">📋 Copy</span>
       </div>
       
-      <p style="font-size:11px; color:#d9534f; margin-top:0; line-height:1.4; font-weight:bold;">⚠️ Dhyan Dein: Payment complete karne ke baad neeche UTR / Reference Number daalna zaroori hai!</p>
+      <div style="font-size:12px; color:#d9534f; margin-top:5px; padding:8px; background:#fff3f3; border-radius:6px; font-weight:bold;">
+        ⚠️ Niche wale box me strictly 12-digit ka UTR number dalein!
+      </div>
   `;
 
   // QR Box Back Button Logic
@@ -556,8 +570,10 @@ $("step2PayBtn").onclick = () => {
 // FINAL CONFIRM UTR & SAVE TO FIREBASE
 $("confirmOrderBtn").onclick = () => {
   const utrValue = $("chkUtr").value.trim();
-  if (utrValue.length < 10) {
-    alert("Kripya payment karne ke baad 12-digit ka sahi UTR / Reference Number daalein!");
+  
+  // STRICT CHECK: Ensure length is exactly 12 and contains only digits
+  if (utrValue.length !== 12 || !/^\d+$/.test(utrValue)) {
+    alert("Galat UTR! Kripya exactly 12-digit ka sahi numeric UTR / Reference Number daalein (Aapne " + utrValue.length + " anko ka dala hai).");
     return;
   }
 
