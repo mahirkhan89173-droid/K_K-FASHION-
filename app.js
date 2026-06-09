@@ -158,7 +158,7 @@ function renderProducts() {
 ════════════════════════════════════ */
 function openProductDetail(p) {
   lockScroll();
-  allowZoom();
+  // Yahan se allowZoom() HATA diya gaya hai taki product page par zoom na ho.
 
   currentDetailProduct = p; const price = finalPrice(p), inStock = p.inStock !== false, cat = getCat(p.mainCategoryId);
   
@@ -173,10 +173,11 @@ function openProductDetail(p) {
     const imgEl = document.createElement("img");
     imgEl.src = imgUrl; imgEl.alt = p.name;
     
-    // NEW: Open Fullscreen Viewer on Click
+    // NEW: Open Fullscreen Viewer on Click (Sirf yahin zoom allow hoga)
     imgEl.onclick = () => {
       $("fullImage").src = imgUrl;
       $("imageViewer").classList.remove("hidden");
+      allowZoom(); // YAHAN ADD KIYA GAYA HAI Taki fullscreen image par zoom ho sake!
     };
 
     slider.appendChild(imgEl);
@@ -496,8 +497,17 @@ $("saveEditBtn").onclick = () => {
 /* ════════════════════════════════════
    FULLSCREEN VIEWER LOGIC (NEW)
 ════════════════════════════════════ */
-$("closeViewerBtn").onclick = () => $("imageViewer").classList.add("hidden");
-$("imageViewer").onclick = (e) => { if (e.target === $("imageViewer") || e.target === $("fullImage")) $("imageViewer").classList.add("hidden"); };
+// YAHAN PAR ZOOM PREVENT ADD KIYA GAYA HAI Taki jab viewer band ho, zoom band ho jaye
+$("closeViewerBtn").onclick = () => { 
+  $("imageViewer").classList.add("hidden"); 
+  preventZoom(); 
+};
+$("imageViewer").onclick = (e) => { 
+  if (e.target === $("imageViewer") || e.target === $("fullImage")) { 
+    $("imageViewer").classList.add("hidden"); 
+    preventZoom(); 
+  } 
+};
 
 /* ════════════════════════════════════
    INIT
