@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════
-   K_K FASHION — app.js (FINAL - UI REFINEMENTS & FIXES)
+   K_K FASHION — app.js (FINAL - ROCK SOLID CHECKOUT)
 ═══════════════════════════════════════════════════════ */
 
 const load = (k, fb) => { try { const r = localStorage.getItem(k); return r ? JSON.parse(r) : fb; } catch { return fb; } };
@@ -296,10 +296,29 @@ $("cartOverlay").onclick = e => { if (e.target === $("cartOverlay")) { $("cartOv
 $("clearCartBtn").onclick = clearCart;
 
 /* ════════════════════════════════════
-   CHECKOUT OVERLAY (STEP 1, 2 & 3 WITH UTR VERIFY)
+   CHECKOUT OVERLAY (100% ROCK SOLID LOGIC)
 ════════════════════════════════════ */
 const UPI_ID = "kkfashion@nyes"; 
 const STORE_NAME = "KKFashion"; 
+
+// Only allow strictly 12 digits on UTR input
+if($("chkUtr")) {
+  $("chkUtr").oninput = function() {
+      this.value = this.value.replace(/[^0-9]/g, '').slice(0, 12);
+  };
+}
+
+// Copy UPI Logic
+if($("copyUpiBtn")) {
+  $("copyUpiBtn").onclick = function() {
+      navigator.clipboard.writeText(UPI_ID).then(() => {
+          this.innerHTML = `${UPI_ID} <span style="font-size:12px; background:#4cc968; color:#fff; padding:3px 8px; border-radius:4px;">✅ Copied!</span>`;
+          setTimeout(() => { 
+              this.innerHTML = `${UPI_ID} <span style="font-size:12px; background:var(--primary); color:#fff; padding:3px 8px; border-radius:4px;">📋 Copy</span>`; 
+          }, 2000);
+      }).catch(err => alert("Copy nahi ho paya, manually type karein."));
+  };
+}
 
 function directBuyCheckout(p) {
   preventZoom();
@@ -314,21 +333,21 @@ function resetCheckoutUI() {
   $("checkoutStep1").classList.remove("hidden");
   $("checkoutStep2").classList.add("hidden");
   if($("checkoutStep3")) $("checkoutStep3").classList.add("hidden");
+  
+  // Footer
   $("checkoutFooter").classList.remove("hidden");
   $("chkFooterTotalRow").classList.remove("hidden");
   $("step1NextBtn").classList.remove("hidden");
   $("step2PayBtn").classList.add("hidden");
-  $("utrSection").classList.add("hidden"); 
-  
+  $("confirmOrderBtn").classList.add("hidden");
+
+  // Step 2 inner areas
+  if($("paymentOptionsWrap")) $("paymentOptionsWrap").classList.remove("hidden");
+  if($("qrScanSection")) $("qrScanSection").classList.add("hidden");
   if($("chkUtr")) $("chkUtr").value = "";
-  if($("dynamicUtrInput")) $("dynamicUtrInput").value = "";
   
   // Clear timer if running
   if(window.paymentInterval) clearInterval(window.paymentInterval);
-  
-  // Remove generated QR box if any
-  const qrBox = $("qrDisplayBox");
-  if(qrBox) qrBox.remove();
   
   $("step1Indicator").className = "step-item active"; $("step1Circle").innerHTML = "1";
   $("line1").className = "step-line"; 
@@ -345,32 +364,35 @@ function openCheckout() {
   $("checkoutOverlay").classList.remove("hidden");
 }
 
-/* SMART BACK BUTTON LOGIC (FOR TOP HEADER ARROW) */
+/* SMART BACK BUTTON LOGIC (FOR TOP HEADER ARROW ONLY) */
 $("closeCheckout").onclick = () => { 
-  // Agar QR code dikh raha hai (Step 2.5), toh Payment Options par wapas jao
-  if (!$("utrSection").classList.contains("hidden")) {
-      $("utrSection").classList.add("hidden");
+  // 1. Agar QR code dikh raha hai (Step 2 se peeche jana)
+  if (!$("qrScanSection").classList.contains("hidden")) {
+      $("qrScanSection").classList.add("hidden");
+      $("paymentOptionsWrap").classList.remove("hidden");
+      
+      $("confirmOrderBtn").classList.add("hidden");
       $("step2PayBtn").classList.remove("hidden");
+      
       if(window.paymentInterval) clearInterval(window.paymentInterval);
-      const qrBox = $("qrDisplayBox");
-      if(qrBox) qrBox.remove();
   }
-  // Agar Payment Options dikh rahe hain (Step 2), toh Address form (Step 1) par wapas jao
+  // 2. Agar Payment Options dikh rahe hain (Step 2 se Step 1 par wapas jao)
   else if (!$("checkoutStep2").classList.contains("hidden")) {
       $("checkoutStep2").classList.add("hidden");
       $("checkoutStep1").classList.remove("hidden");
-      $("step1NextBtn").classList.remove("hidden");
+      
       $("step2PayBtn").classList.add("hidden");
+      $("step1NextBtn").classList.remove("hidden");
       $("chkFooterTotalRow").classList.remove("hidden");
 
-      // Stepper UI reset
+      // Stepper UI backward reset
       $("step2Indicator").classList.remove("active");
       $("step1Indicator").classList.remove("completed");
       $("step1Indicator").classList.add("active");
       $("line1").classList.remove("completed");
       $("step1Circle").innerHTML = "1";
   }
-  // Agar Step 1 par hi hain, toh poora Checkout Popup band kar do
+  // 3. Agar Step 1 par hi hain, toh poora Checkout Popup band kar do
   else {
       $("checkoutOverlay").classList.add("hidden"); 
       unlockScroll(); 
@@ -391,7 +413,7 @@ $("step1NextBtn").onclick = () => {
   $("step2PayBtn").classList.remove("hidden");
   $("chkFooterTotalRow").classList.add("hidden");
 
-  // Stepper UI
+  // Stepper UI update
   $("step1Indicator").classList.remove("active"); $("step1Indicator").classList.add("completed");
   $("step1Circle").innerHTML = "✔"; $("line1").classList.add("completed");
   $("step2Indicator").classList.add("active");
@@ -433,23 +455,21 @@ function updateStep2Summary() {
      $("billDiscount").textContent = discPercent + "% off";
   }
 
-  // Update COD Alert Details
   const advance = Math.round(finalTotal * 0.25);
   const balance = finalTotal - advance;
   $("codAdvanceAmt").textContent = "₹" + advance;
   $("codBalanceAmt").textContent = "₹" + balance;
 }
 
-// Payment Option Toggle Logic
+// Payment Option Toggle
 document.querySelectorAll('input[name="payMethod"]').forEach(radio => {
   radio.addEventListener("change", (e) => {
-    
-    // Clear previous UTR status and restore standard pay button
+    // Agar option badle toh wapas default step 2 par le aao
+    $("qrScanSection").classList.add("hidden");
+    $("paymentOptionsWrap").classList.remove("hidden");
+    $("confirmOrderBtn").classList.add("hidden");
     $("step2PayBtn").classList.remove("hidden");
-    $("utrSection").classList.add("hidden");
     if(window.paymentInterval) clearInterval(window.paymentInterval);
-    const qrBox = $("qrDisplayBox");
-    if(qrBox) qrBox.remove(); // Remove QR box if payment method is changed
 
     if (e.target.value === "COD") {
        $("codWarningBox").classList.remove("hidden");
@@ -461,96 +481,32 @@ document.querySelectorAll('input[name="payMethod"]').forEach(radio => {
   });
 });
 
-// PAY BUTTON CLICK -> SHOW QR CODE IN BODY, UTR IN FOOTER
+// PAY BUTTON CLICK -> HIDE PAY BUTTON, SHOW QR + UTR + CONFIRM BUTTON
 $("step2PayBtn").onclick = () => {
   const payMethod = $("payPrepaid").checked ? "Prepaid" : "COD";
   let finalTotal = 0;
   cart.forEach(i => finalTotal += finalPrice(i.product) * i.qty);
-  
   let amountPaid = payMethod === "Prepaid" ? finalTotal : Math.round(finalTotal * 0.25);
 
-  // HIDE PAY BUTTON AND SHOW UTR INPUT SECTION (in Footer)
+  // Set the price in QR section
+  $("qrAmountDisplay").textContent = "₹" + amountPaid;
+
+  // Toggle Visibility securely
+  $("paymentOptionsWrap").classList.add("hidden");
+  $("qrScanSection").classList.remove("hidden");
+
+  // Switch Footer Buttons
   $("step2PayBtn").classList.add("hidden");
-  $("utrSection").classList.remove("hidden");
+  $("confirmOrderBtn").classList.remove("hidden");
 
-  // Fix Scrolling issue: Allow native scroll inside the step2 body
-  $("checkoutStep2").style.overflowY = "auto";
-  $("checkoutStep2").style.paddingBottom = "50px"; 
+  // Scroll to top of Step 2 area so QR is fully visible
+  $("checkoutStep2").scrollTop = 0;
 
-  // Enable Strict 12-digit logic on the REAL HTML input box
-  let utrInput = $("chkUtr");
-  if(utrInput) {
-      utrInput.oninput = function() {
-          this.value = this.value.replace(/[^0-9]/g, '').slice(0, 12);
-      };
-  }
-
-  // Remove existing QR box if present
-  let existingQr = document.getElementById("qrDisplayBox");
-  if(existingQr) existingQr.remove();
-
-  // Create NEW QR Code Box
-  let qrContainer = document.createElement("div");
-  qrContainer.id = "qrDisplayBox";
-  // Is box ko hum 'checkoutStep2' (yani beech ke scrollable area) me dalenge!
-  qrContainer.style.cssText = "position:relative; text-align:center; background:#fff; padding:15px; border-radius:12px; margin-top:20px; border: 1px solid #e0e0e0; box-shadow: 0 4px 6px rgba(0,0,0,0.05);";
-  
-  qrContainer.innerHTML = `
-      <button id="qrBackBtn" style="position:absolute; top:10px; left:10px; background:var(--bg); border:1px solid #ddd; font-size:18px; cursor:pointer; color:#333; padding:5px 10px; border-radius:6px; font-weight:bold; display:flex; align-items:center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); z-index:10;">
-        ⬅
-      </button>
-
-      <h4 style="color:#111; margin-top:5px; margin-bottom:5px; font-size:16px;">Scan To Pay: <span style="color:#e05555; font-weight:900;">₹${amountPaid}</span></h4>
-      
-      <div id="paymentTimer" style="color:#d9534f; font-weight:bold; font-size:14px; margin-bottom:10px; background:#fff3f3; padding:5px; border-radius:5px; display:inline-block;">Time left: 05:00</div>
-      
-      <br>
-      <img src="62673.png" alt="QR Code Scanner" style="width:180px; height:auto; max-height:220px; object-fit:contain; border-radius:8px; margin-bottom:10px; border:2px solid #f0f0f0; padding:5px;" />
-      
-      <div style="color:#666; font-size:12px; margin-bottom:8px; text-transform:uppercase;">Or Pay via UPI ID</div>
-      
-      <div id="copyUpiBtn" style="font-weight:bold; font-size:15px; color:#333; background:#f9f9f9; padding:8px 15px; border-radius:6px; border:1px dashed #ccc; display:inline-flex; align-items:center; gap:8px; cursor:pointer; margin-bottom:12px; transition:0.3s;">
-          ${UPI_ID} <span style="font-size:12px; background:var(--primary); color:#fff; padding:3px 8px; border-radius:4px;">📋 Copy</span>
-      </div>
-      
-      <div style="font-size:12px; color:#d9534f; margin-top:5px; padding:8px; background:#fff3f3; border-radius:6px; font-weight:bold;">
-        ⚠️ Niche wale box me strictly 12-digit ka UTR number dalein!
-      </div>
-
-      <input type="tel" id="dynamicUtrInput" placeholder="Enter 12-Digit UTR No." maxlength="12" style="width:100%; padding:14px; margin-top:15px; border:2px solid #ccc; border-radius:8px; font-size:16px; text-align:center; font-weight:bold; box-sizing:border-box; letter-spacing:2px; color:#111; background:#fff;" />
-  `;
-
-  // Strict 12 digit validation on dynamic input
-  let dynUtr = $("dynamicUtrInput");
-  dynUtr.oninput = function() {
-      this.value = this.value.replace(/[^0-9]/g, '').slice(0, 12);
-  };
-
-  // QR Box Back Button Logic
-  document.getElementById("qrBackBtn").onclick = function() {
-      $("utrSection").classList.add("hidden");
-      $("step2PayBtn").classList.remove("hidden");
-      if(window.paymentInterval) clearInterval(window.paymentInterval);
-      qrContainer.remove();
-  };
-
-  // Copy UPI ID Logic
-  document.getElementById("copyUpiBtn").onclick = function() {
-      navigator.clipboard.writeText(UPI_ID).then(() => {
-          const btn = document.getElementById("copyUpiBtn");
-          btn.innerHTML = `${UPI_ID} <span style="font-size:12px; background:#4cc968; color:#fff; padding:3px 8px; border-radius:4px;">✅ Copied!</span>`;
-          setTimeout(() => { 
-              btn.innerHTML = `${UPI_ID} <span style="font-size:12px; background:var(--primary); color:#fff; padding:3px 8px; border-radius:4px;">📋 Copy</span>`; 
-          }, 2000);
-      }).catch(err => alert("Copy nahi ho paya, manually type karein."));
-  };
-
-  // Timer Logic (5 Minutes)
+  // Timer Logic
   let timeLeft = 300; 
   const timerDisplay = document.getElementById("paymentTimer");
   
   if(window.paymentInterval) clearInterval(window.paymentInterval);
-  
   window.paymentInterval = setInterval(() => {
       timeLeft--;
       let minutes = Math.floor(timeLeft / 60);
@@ -567,20 +523,11 @@ $("step2PayBtn").onclick = () => {
 
 // FINAL CONFIRM UTR & SAVE TO FIREBASE
 $("confirmOrderBtn").onclick = () => {
-  // Grab UTR from our dynamically visible box, fallback to old box if needed
-  let utrValue = "";
-  let dynUtr = $("dynamicUtrInput");
-  let oldUtr = $("chkUtr");
-
-  if (dynUtr) {
-      utrValue = dynUtr.value.trim();
-  } else if (oldUtr) {
-      utrValue = oldUtr.value.trim();
-  }
+  let utrValue = $("chkUtr").value.trim();
   
-  // STRICT CHECK: Ensure length is exactly 12 and contains only digits
+  // STRICT 12 DIGIT CHECK
   if (utrValue.length !== 12 || !/^\d+$/.test(utrValue)) {
-    alert("Galat UTR! Kripya exactly 12-digit ka sahi numeric UTR / Reference Number daalein (Aapne " + utrValue.length + " anko ka dala hai).");
+    alert("Galat UTR! Kripya exactly 12-digit ka sahi numeric UTR / Reference Number daalein.");
     return;
   }
 
@@ -627,11 +574,11 @@ $("confirmOrderBtn").onclick = () => {
         if (window.fetchOrdersFromFirebase) window.fetchOrdersFromFirebase();
       } else {
         alert("Server error. Please try again.");
-        btn.textContent = "Confirm & Place Order";
+        btn.textContent = "Verify Payment & Place Order";
       }
     });
   } else {
-      // Fallback if firebase function not present
+      // Fallback
       showStep3Success(payMethod, amountPaid, balanceDue);
   }
 };
