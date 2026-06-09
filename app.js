@@ -158,7 +158,6 @@ function renderProducts() {
 ════════════════════════════════════ */
 function openProductDetail(p) {
   lockScroll();
-
   currentDetailProduct = p; const price = finalPrice(p), inStock = p.inStock !== false, cat = getCat(p.mainCategoryId);
   
   const slider = $("pdImageSlider");
@@ -171,8 +170,6 @@ function openProductDetail(p) {
   images.forEach((imgUrl, i) => {
     const imgEl = document.createElement("img");
     imgEl.src = imgUrl; imgEl.alt = p.name;
-    
-    // Open Fullscreen Viewer on Click
     imgEl.onclick = () => {
       $("fullImage").src = imgUrl;
       $("imageViewer").classList.remove("hidden");
@@ -299,8 +296,11 @@ $("cartOverlay").onclick = e => { if (e.target === $("cartOverlay")) { $("cartOv
 $("clearCartBtn").onclick = clearCart;
 
 /* ════════════════════════════════════
-   CHECKOUT OVERLAY & STEPPER LOGIC
+   CHECKOUT OVERLAY (STEP 1, 2 & 3)
 ════════════════════════════════════ */
+const UPI_ID = "kasifpathan@upi"; // YAHAN APNA ASLI UPI ID DAALEIN
+const STORE_NAME = "K_K_Fashion";
+
 function directBuyCheckout(p) {
   preventZoom();
   cart = [{ product: p, qty: 1 }]; save("knk_cart", cart); renderCartCount();
@@ -310,41 +310,191 @@ function directBuyCheckout(p) {
 
 $("checkoutBtn").onclick = () => { if (!cart.length) return; $("cartOverlay").classList.add("hidden"); openCheckout(); };
 
+function resetCheckoutUI() {
+  $("checkoutStep1").classList.remove("hidden");
+  $("checkoutStep2").classList.add("hidden");
+  if($("checkoutStep3")) $("checkoutStep3").classList.add("hidden");
+  $("checkoutFooter").classList.remove("hidden");
+  $("chkFooterTotalRow").classList.remove("hidden");
+  $("step1NextBtn").classList.remove("hidden");
+  $("step2PayBtn").classList.add("hidden");
+  
+  $("step1Indicator").className = "step-item active"; $("step1Circle").innerHTML = "1";
+  $("line1").className = "step-line"; 
+  $("step2Indicator").className = "step-item"; $("step2Circle").innerHTML = "2";
+  $("line2").className = "step-line"; 
+  $("step3Indicator").className = "step-item"; $("step3Circle").innerHTML = "3";
+}
+
 function openCheckout() {
   lockScroll(); 
+  resetCheckoutUI();
   const total = cart.reduce((s, i) => s + finalPrice(i.product) * i.qty, 0);
   $("chkTotalAmt").textContent = "₹" + total;
   $("checkoutOverlay").classList.remove("hidden");
-  $("step1Indicator").className = "step-item active"; $("step1Circle").innerHTML = "1";
-  $("line1").className = "step-line"; $("step2Indicator").className = "step-item"; $("step3Indicator").className = "step-item";
 }
 
 $("closeCheckout").onclick = () => { $("checkoutOverlay").classList.add("hidden"); unlockScroll(); };
 
+// STEP 1 -> STEP 2
 $("step1NextBtn").onclick = () => {
-  const name = $("chkName").value.trim(), mobile = $("chkMobile").value.trim(), address = $("chkAddress").value.trim(), state = $("chkState").value.trim(), pincode = $("chkPincode").value.trim(), landmark = $("chkLandmark").value.trim();
+  const name = $("chkName").value.trim(), mobile = $("chkMobile").value.trim(), address = $("chkAddress").value.trim(), state = $("chkState").value.trim(), pincode = $("chkPincode").value.trim();
   if(!name || !mobile || !address || !state || !pincode) { alert("Kripya sabhi zaroori jankari bharein!"); return; }
   if(mobile.length < 10 || isNaN(mobile)) { alert("Mobile number galat hai!"); return; }
 
-  const total = cart.reduce((s, i) => s + finalPrice(i.product) * i.qty, 0);
-  const orderData = { name, mobile, address, state, pincode, landmark, items: cart, totalAmount: total, status: "Recent" };
+  // Transition to Step 2
+  $("checkoutStep1").classList.add("hidden");
+  $("checkoutStep2").classList.remove("hidden");
+  
+  $("step1NextBtn").classList.add("hidden");
+  $("step2PayBtn").classList.remove("hidden");
+  $("chkFooterTotalRow").classList.add("hidden"); // Hide the normal footer total
 
-  const btn = $("step1NextBtn"); btn.textContent = "Placing Order...";
+  // Stepper UI
+  $("step1Indicator").classList.remove("active"); $("step1Indicator").classList.add("completed");
+  $("step1Circle").innerHTML = "✔"; $("line1").classList.add("completed");
+  $("step2Indicator").classList.add("active");
+
+  renderStep2();
+};
+
+function renderStep2() {
+  if (!cart.length) return;
+  const item = cart[0]; 
+  const p = item.product;
+  const mainImg = (Array.isArray(p.image) && p.image.length > 0) ? p.image[0] : (typeof p.image === 'string' ? p.image : "placeholder.jpg");
+  
+  $("chkStep2Img").src = mainImg;
+  $("chkStep2Qty").value = item.qty > 7 ? 7 : item.qty; // Max 7 logic
+  
+  updateStep2Summary();
+
+  $("chkStep2Qty").onchange = (e) => {
+    item.qty = parseInt(e.target.value);
+    save("knk_cart", cart); renderCartCount();
+    updateStep2Summary();
+  };
+}
+
+function updateStep2Summary() {
+  let actualTotal = 0;
+  let finalTotal = 0;
+  cart.forEach(i => {
+     actualTotal += i.product.price * i.qty;
+     finalTotal += finalPrice(i.product) * i.qty;
+  });
+  
+  $("billActual").textContent = "₹" + actualTotal;
+  $("billFinal").textContent = "₹" + finalTotal;
+  
+  if (actualTotal > 0) {
+     const discPercent = Math.round(((actualTotal - finalTotal) / actualTotal) * 100);
+     $("billDiscount").textContent = discPercent + "% off";
+  }
+
+  // Update COD Alert Details
+  const advance = Math.round(finalTotal * 0.25);
+  const balance = finalTotal - advance;
+  $("codAdvanceAmt").textContent = "₹" + advance;
+  $("codBalanceAmt").textContent = "₹" + balance;
+}
+
+// Payment Option Toggle Logic
+document.querySelectorAll('input[name="payMethod"]').forEach(radio => {
+  radio.addEventListener("change", (e) => {
+    if (e.target.value === "COD") {
+       $("codWarningBox").classList.remove("hidden");
+       $("step2PayBtn").textContent = "Pay 25% Advance via UPI";
+    } else {
+       $("codWarningBox").classList.add("hidden");
+       $("step2PayBtn").textContent = "Pay 100% Now via UPI";
+    }
+  });
+});
+
+// STEP 2 -> STEP 3 (PAYMENT & FIREBASE)
+$("step2PayBtn").onclick = () => {
+  const payMethod = $("payPrepaid").checked ? "Prepaid" : "COD";
+  let finalTotal = 0;
+  cart.forEach(i => finalTotal += finalPrice(i.product) * i.qty);
+  
+  let amountPaid = 0;
+  let balanceDue = 0;
+  
+  if (payMethod === "Prepaid") {
+    amountPaid = finalTotal;
+    balanceDue = 0;
+  } else {
+    amountPaid = Math.round(finalTotal * 0.25);
+    balanceDue = finalTotal - amountPaid;
+  }
+
+  // CREATE UPI INTENT LINK
+  const upiLink = `upi://pay?pa=${UPI_ID}&pn=${STORE_NAME}&am=${amountPaid}&cu=INR`;
+
+  // Trigger UPI app picker in Android
+  window.location.href = upiLink;
+
+  // Prepare Data for Firebase
+  const orderData = { 
+    name: $("chkName").value.trim(), 
+    mobile: $("chkMobile").value.trim(), 
+    address: $("chkAddress").value.trim(), 
+    state: $("chkState").value.trim(), 
+    pincode: $("chkPincode").value.trim(), 
+    landmark: $("chkLandmark").value.trim(), 
+    items: cart, 
+    totalAmount: finalTotal,
+    paymentMethod: payMethod,
+    amountPaid: amountPaid,
+    balanceDue: balanceDue,
+    status: "Recent" 
+  };
+
+  const btn = $("step2PayBtn"); btn.textContent = "Processing...";
+  
+  // Save to Firebase directly after intent fires
   if (window.saveOrderToFirebase) {
     window.saveOrderToFirebase(orderData).then(success => {
-      btn.textContent = "Save Address & Place Order";
       if (success) {
-        $("step1Indicator").className = "step-item completed"; $("step1Circle").innerHTML = "✔";
-        $("line1").classList.add("completed"); $("step2Indicator").classList.add("active");
-        alert("Order successfully placed! 🎉");
-        $("checkoutOverlay").classList.add("hidden");
-        unlockScroll();
-        clearCart();
+        showStep3Success(payMethod, amountPaid, balanceDue);
         if (window.fetchOrdersFromFirebase) window.fetchOrdersFromFirebase();
+      } else {
+        alert("Server error. Please try again.");
+        btn.textContent = "Pay Now via UPI App";
       }
     });
-  } else { alert("Firebase error."); btn.textContent = "Save Address & Place Order"; }
+  }
 };
+
+// STEP 3 SUCCESS SCREEN
+function showStep3Success(payMethod, paid, due) {
+  $("checkoutStep2").classList.add("hidden");
+  $("checkoutStep3").classList.remove("hidden");
+  $("checkoutFooter").classList.add("hidden"); // Footer completely hidden here
+  
+  $("step2Indicator").classList.remove("active"); $("step2Indicator").classList.add("completed");
+  $("step2Circle").innerHTML = "✔"; $("line2").classList.add("completed");
+  $("step3Indicator").classList.add("active");
+
+  let sumHtml = `<strong style="font-size:14px; color:var(--primary);">Payment Mode: ${payMethod}</strong><br><br>`;
+  if(payMethod === "COD") {
+    sumHtml += `<strong>Safety Deposit Paid (25%):</strong> ₹${paid}<br>`;
+    sumHtml += `<strong style="color:var(--destructive)">Balance Cash on Delivery (75%):</strong> ₹${due}`;
+  } else {
+    sumHtml += `<strong>Total Paid Online:</strong> ₹${paid}<br>`;
+    sumHtml += `<strong style="color:#4cc968">No pending dues!</strong>`;
+  }
+  $("successOrderSummary").innerHTML = sumHtml;
+  clearCart();
+}
+
+$("successCloseBtn").onclick = () => {
+  $("checkoutOverlay").classList.add("hidden");
+  unlockScroll();
+  resetCheckoutUI();
+};
+
 
 /* ════════════════════════════════════
    ADMIN PIN & PANEL LOGIC
@@ -413,7 +563,6 @@ function renderOrdersByTab() {
   list.innerHTML = "";
   
   filtered.forEach(o => {
-    // NEW: Ab admin ko order mein photo bhi dikhegi
     const itemsHtml = o.items.map(i => {
       const mainImg = (Array.isArray(i.product.image) && i.product.image.length > 0) ? i.product.image[0] : (typeof i.product.image === 'string' ? i.product.image : "placeholder.jpg");
       return `<div class="order-item-row"><img src="${mainImg}" class="order-item-img" alt="${i.product.name}" /><span>${i.product.name} <strong style="color:var(--primary)">(x${i.qty})</strong></span></div>`;
@@ -421,10 +570,22 @@ function renderOrdersByTab() {
     
     const dateStr = o.timestamp && o.timestamp.seconds ? new Date(o.timestamp.seconds * 1000).toLocaleString() : "Just Now";
     
+    // NEW: Pay Method Badge for Admin Panel
+    const payBadge = o.paymentMethod === "COD" 
+       ? `<span style="background:var(--destructive); color:#fff; padding:3px 8px; border-radius:4px; font-size:10px; margin-left:8px;">C.O.D (Due: ₹${o.balanceDue})</span>` 
+       : `<span style="background:#4cc968; color:#fff; padding:3px 8px; border-radius:4px; font-size:10px; margin-left:8px; color:black; font-weight:bold;">PREPAID</span>`;
+
     const div = document.createElement("div"); div.className = "admin-order-card";
     div.innerHTML = `
-      <div class="order-head"><span class="order-id">ID: ${o.id ? o.id.substring(0,8) : 'NEW'}...</span><span class="order-total">₹${o.totalAmount}</span></div>
-      <div class="order-cust"><strong>${o.name}</strong> (${o.mobile})<br>${o.address}, ${o.state} - ${o.pincode}<br><small style="color:var(--muted)">${dateStr}</small></div>
+      <div class="order-head">
+        <span class="order-id">ID: ${o.id ? o.id.substring(0,8) : 'NEW'}...</span>
+        <span class="order-total">₹${o.totalAmount}</span>
+      </div>
+      <div class="order-cust">
+        <strong>${o.name}</strong> (${o.mobile}) ${payBadge}<br>
+        ${o.address}, ${o.state} - ${o.pincode}<br>
+        <small style="color:var(--muted)">${dateStr}</small>
+      </div>
       <div class="order-items">${itemsHtml}</div>
       <div class="order-actions">
         <select class="field small-field status-select" data-id="${o.id}">
