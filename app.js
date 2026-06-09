@@ -298,7 +298,7 @@ $("clearCartBtn").onclick = clearCart;
 /* ════════════════════════════════════
    CHECKOUT OVERLAY (STEP 1, 2 & 3)
 ════════════════════════════════════ */
-const UPI_ID = "kasifpathan@upi"; // YAHAN APNA ASLI UPI ID DAALEIN
+const UPI_ID = "kkfashion@nyes"; // YAHAN APNA ASLI UPI ID DAALEIN
 const STORE_NAME = "K_K_Fashion";
 
 function directBuyCheckout(p) {
