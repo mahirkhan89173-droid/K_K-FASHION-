@@ -118,8 +118,6 @@ body.no-scroll { overflow: hidden !important; }
 .card { border: 1px solid var(--border); border-radius: 16px; background: var(--card); padding: 18px; margin-bottom: 20px; }
 .card h3 { margin-bottom: 6px; font-family: var(--font-display); font-size: 16px; font-weight: 600; color: var(--primary); }
 .section-hint { font-size: 12px; color: var(--muted); margin-bottom: 14px; }
-
-/* FIX: Input zoom disabled by using 16px font-size */
 .field { width: 100%; border: 1px solid var(--border); background: var(--bg2); color: var(--fg); border-radius: 10px; padding: 10px 12px; font-size: 16px; margin-bottom: 12px; font-family: var(--font-body); }
 .small-field { width: auto; min-width: 120px; margin-bottom: 0; }
 .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
@@ -172,7 +170,7 @@ body.no-scroll { overflow: hidden !important; }
 .pd-back { display: flex; align-items: center; gap: 6px; background: none; border: none; color: var(--fg); font-size: 14px; font-weight: 500; cursor: pointer; padding: 8px 10px; border-radius: 10px; }
 .pd-scroll { flex: 1; overflow-y: auto; overflow-x: hidden; padding-bottom: 110px; }
 
-/* NEW: MULTIPLE IMAGES SLIDER */
+/* MULTIPLE IMAGES SLIDER */
 .pd-img-wrap { position: relative; width: 100%; background: var(--card2); }
 .pd-img-slider { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; width: 100%; }
 .pd-img-slider::-webkit-scrollbar { display: none; }
@@ -191,6 +189,26 @@ body.no-scroll { overflow: hidden !important; }
 .pd-off { font-size: 13px; color: var(--primary); font-weight: 700; background: rgba(201,168,76,0.13); padding: 2px 10px; border-radius: 6px; }
 .pd-action-bar { position: fixed; bottom: 0; left: 0; right: 0; z-index: 46; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 12px 16px; background: rgba(10,10,10,0.97); backdrop-filter: blur(16px); border-top: 1px solid var(--border2); }
 .pd-action-bar .btn-outline, .pd-action-bar .btn-primary { padding: 14px 8px; font-size: 14px; border-radius: 12px; }
+
+/* RE-ADDED: HORIZONTAL SECTIONS CSS */
+.horiz-sections { padding: 0; }
+.horiz-section { padding: 18px 0 4px; border-bottom: 1px solid var(--border); animation: fadeUp 0.4s ease both; }
+.horiz-section-head { display: flex; align-items: center; justify-content: space-between; padding: 0 16px; margin-bottom: 12px; }
+.horiz-section-title { font-family: var(--font-display); font-size: 16px; font-weight: 600; color: var(--fg); letter-spacing: 0.04em; }
+.horiz-section-count { font-size: 11px; font-weight: 600; color: var(--primary); background: rgba(201,168,76,0.1); padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
+.horiz-row { display: flex; gap: 10px; overflow-x: auto; padding: 4px 16px 14px; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+.horiz-row::-webkit-scrollbar { display: none; }
+.horiz-card { flex-shrink: 0; width: 130px; border: 1px solid var(--border); border-radius: 12px; background: var(--card); overflow: hidden; cursor: pointer; transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s; animation: cardFadeUp 0.4s ease both; }
+.horiz-card:hover { transform: translateY(-2px); border-color: rgba(201,168,76,0.3); box-shadow: 0 6px 20px rgba(201,168,76,0.07); }
+.horiz-card-img-wrap { position: relative; }
+.horiz-card img { width: 100%; aspect-ratio: 1; object-fit: cover; background: var(--card2); display: block; }
+.horiz-card-oos { position: absolute; inset: 0; background: rgba(10,10,10,0.65); display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 700; color: var(--destructive); letter-spacing: 0.04em; }
+.horiz-card-info { padding: 8px 8px 10px; }
+.horiz-card-name { font-size: 11px; font-weight: 500; color: var(--fg); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px; }
+.horiz-card-price { font-size: 13px; font-weight: 700; color: var(--primary); margin-bottom: 6px; }
+.horiz-card-add { width: 100%; border: 1px solid rgba(201,168,76,0.4); color: var(--primary); background: none; border-radius: 7px; padding: 5px 4px; font-size: 11px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+.horiz-card-add:hover { background: rgba(201,168,76,0.1); }
+.horiz-card-add:disabled { opacity: 0.35; cursor: not-allowed; }
 
 /* CHECKOUT PAGE & STEPPER */
 .checkout-page { width: 100%; height: 100%; background: var(--bg); display: flex; flex-direction: column; animation: slideFromRight 0.3s cubic-bezier(0.16, 1, 0.3, 1); overflow: hidden; }
