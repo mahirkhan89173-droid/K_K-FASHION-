@@ -5,7 +5,7 @@
   --border: #252525; --border2: #2e2a1f; --destructive: #e05555; --radius: 14px;
   --font-display: 'Cormorant Garamond', serif; --font-body: 'Inter', system-ui, sans-serif;
 }
-* { box-sizing: border-box; margin: 0; padding: 0; }
+* { box-sizing: border-box; margin: 0; padding: 0; touch-action: manipulation; }
 body { font-family: var(--font-body); background: var(--bg); color: var(--fg); -webkit-font-smoothing: antialiased; }
 body.no-scroll { overflow: hidden !important; }
 .hidden { display: none !important; }
@@ -19,7 +19,7 @@ body.no-scroll { overflow: hidden !important; }
 .splash-line { width: 55px; height: 1px; background: linear-gradient(to right, transparent, rgba(201,168,76,0.6), transparent); margin-top: 18px; animation: splashLineExpand 0.8s ease 1.0s both; }
 .splash-tagline { font-family: var(--font-display); font-size: 14px; font-style: italic; letter-spacing: 0.18em; color: var(--muted2); margin-top: 12px; animation: splashSubReveal 0.8s ease 1.2s both; }
 
-/* HEADER */
+/* HEADER & SEARCH */
 .header { position: sticky; top: 0; z-index: 30; display: flex; align-items: center; justify-content: space-between; padding: 12px 18px; background: rgba(10,10,10,0.92); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); animation: slideDown 0.5s ease 0.1s both; }
 .logo-btn { display: flex; align-items: center; gap: 10px; background: none; border: none; cursor: pointer; }
 .brand-mark { font-family: var(--font-display); font-size: 22px; font-weight: 700; letter-spacing: 0.08em; background: linear-gradient(135deg, #e8d08a, #C9A84C, #a87f28); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; line-height: 1; }
@@ -27,13 +27,11 @@ body.no-scroll { overflow: hidden !important; }
 .icon-btn { position: relative; background: none; border: none; font-size: 20px; cursor: pointer; padding: 8px; border-radius: 999px; color: var(--fg); transition: color 0.2s, background 0.2s; }
 .icon-btn:hover { background: rgba(201,168,76,0.1); color: var(--primary); }
 .badge { position: absolute; top: 0; right: 0; min-width: 18px; height: 18px; padding: 0 4px; display: flex; align-items: center; justify-content: center; border-radius: 999px; background: var(--primary); color: var(--primary-fg); font-size: 10px; font-weight: 700; }
-
-/* SEARCH BAR */
 .search-wrap { position: relative; z-index: 25; background: rgba(10,10,10,0.95); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); padding: 10px 14px; animation: slideDown 0.5s ease 0.12s both; }
 .search-box { position: relative; display: flex; align-items: center; background: var(--card2); border: 1.5px solid var(--border2); border-radius: 999px; padding: 0 14px; transition: border-color 0.25s, box-shadow 0.25s; }
 .search-box:focus-within { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(201,168,76,0.12), 0 0 20px rgba(201,168,76,0.1); }
 .search-icon { width: 18px; height: 18px; color: var(--primary); flex-shrink: 0; }
-.search-input { flex: 1; background: none; border: none; outline: none; color: var(--fg); font-family: var(--font-body); font-size: 14px; padding: 11px 10px; letter-spacing: 0.02em; }
+.search-input { flex: 1; background: none; border: none; outline: none; color: var(--fg); font-family: var(--font-body); font-size: 16px; padding: 11px 10px; letter-spacing: 0.02em; }
 .search-input::placeholder { color: var(--muted); }
 .search-clear { background: none; border: none; color: var(--muted2); cursor: pointer; font-size: 16px; padding: 6px 4px; border-radius: 999px; }
 
@@ -120,7 +118,9 @@ body.no-scroll { overflow: hidden !important; }
 .card { border: 1px solid var(--border); border-radius: 16px; background: var(--card); padding: 18px; margin-bottom: 20px; }
 .card h3 { margin-bottom: 6px; font-family: var(--font-display); font-size: 16px; font-weight: 600; color: var(--primary); }
 .section-hint { font-size: 12px; color: var(--muted); margin-bottom: 14px; }
-.field { width: 100%; border: 1px solid var(--border); background: var(--bg2); color: var(--fg); border-radius: 10px; padding: 10px 12px; font-size: 14px; margin-bottom: 12px; font-family: var(--font-body); }
+
+/* FIX: Input zoom disabled by using 16px font-size */
+.field { width: 100%; border: 1px solid var(--border); background: var(--bg2); color: var(--fg); border-radius: 10px; padding: 10px 12px; font-size: 16px; margin-bottom: 12px; font-family: var(--font-body); }
 .small-field { width: auto; min-width: 120px; margin-bottom: 0; }
 .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
@@ -171,9 +171,17 @@ body.no-scroll { overflow: hidden !important; }
 .pd-header { flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: rgba(10,10,10,0.94); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); }
 .pd-back { display: flex; align-items: center; gap: 6px; background: none; border: none; color: var(--fg); font-size: 14px; font-weight: 500; cursor: pointer; padding: 8px 10px; border-radius: 10px; }
 .pd-scroll { flex: 1; overflow-y: auto; overflow-x: hidden; padding-bottom: 110px; }
+
+/* NEW: MULTIPLE IMAGES SLIDER */
 .pd-img-wrap { position: relative; width: 100%; background: var(--card2); }
-.pd-img-wrap img { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; display: block; }
-.pd-img-stock { position: absolute; bottom: 12px; left: 12px; font-size: 11px; padding: 3px 10px; }
+.pd-img-slider { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; width: 100%; }
+.pd-img-slider::-webkit-scrollbar { display: none; }
+.pd-img-slider img { flex: 0 0 100%; width: 100%; aspect-ratio: 1/1; object-fit: cover; scroll-snap-align: start; }
+.pd-img-dots { position: absolute; bottom: 12px; left: 0; right: 0; display: flex; justify-content: center; gap: 6px; pointer-events: none; }
+.dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.4); transition: 0.3s; }
+.dot.active { background: var(--primary); width: 14px; border-radius: 4px; }
+.pd-img-stock { position: absolute; top: 12px; left: 12px; font-size: 11px; padding: 3px 10px; }
+
 .pd-info { padding: 18px 16px 14px; border-bottom: 1px solid var(--border); }
 .pd-breadcrumb { font-size: 11px; font-weight: 600; color: var(--primary); text-transform: uppercase; margin-bottom: 8px; }
 .pd-name { font-family: var(--font-display); font-size: 24px; font-weight: 600; color: var(--fg); line-height: 1.3; margin-bottom: 12px; }
