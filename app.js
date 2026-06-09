@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════
-   K_K FASHION — app.js (100% COMPLETE & UNALTERED)
+   K_K FASHION — app.js (UPDATED WITH QR CODE SCANNER UI)
 ═══════════════════════════════════════════════════════ */
 
 const load = (k, fb) => { try { const r = localStorage.getItem(k); return r ? JSON.parse(r) : fb; } catch { return fb; } };
@@ -298,8 +298,9 @@ $("clearCartBtn").onclick = clearCart;
 /* ════════════════════════════════════
    CHECKOUT OVERLAY (STEP 1, 2 & 3 WITH UTR VERIFY)
 ════════════════════════════════════ */
-const UPI_ID = "9521873437@ybl"; 
-const STORE_NAME = "KKFashion"; // Fixed: Removed underscores for standard compliance
+// UPDATED UPI ID
+const UPI_ID = "kkfashion@nyes"; 
+const STORE_NAME = "KKFashion"; 
 
 function directBuyCheckout(p) {
   preventZoom();
@@ -320,6 +321,10 @@ function resetCheckoutUI() {
   $("step2PayBtn").classList.add("hidden");
   $("utrSection").classList.add("hidden"); 
   $("chkUtr").value = "";
+  
+  // Remove generated QR box if any
+  const qrBox = $("qrDisplayBox");
+  if(qrBox) qrBox.remove();
   
   $("step1Indicator").className = "step-item active"; $("step1Circle").innerHTML = "1";
   $("line1").className = "step-line"; 
@@ -405,21 +410,23 @@ function updateStep2Summary() {
 document.querySelectorAll('input[name="payMethod"]').forEach(radio => {
   radio.addEventListener("change", (e) => {
     
-    // Fix: Clear previous UTR status and restore standard pay button
+    // Clear previous UTR status and restore standard pay button
     $("step2PayBtn").classList.remove("hidden");
     $("utrSection").classList.add("hidden");
+    const qrBox = $("qrDisplayBox");
+    if(qrBox) qrBox.remove(); // Remove QR box if payment method is changed
 
     if (e.target.value === "COD") {
        $("codWarningBox").classList.remove("hidden");
-       $("step2PayBtn").textContent = "Pay 25% Advance via UPI";
+       $("step2PayBtn").textContent = "Pay 25% Advance";
     } else {
        $("codWarningBox").classList.add("hidden");
-       $("step2PayBtn").textContent = "Pay 100% Now via UPI";
+       $("step2PayBtn").textContent = "Pay 100% Now";
     }
   });
 });
 
-// PAY BUTTON CLICK -> OPEN UNIVERSAL UPI CHOOSE APPS & SHOW UTR INPUT
+// PAY BUTTON CLICK -> SHOW QR CODE INSTEAD OF REDIRECT
 $("step2PayBtn").onclick = () => {
   const payMethod = $("payPrepaid").checked ? "Prepaid" : "COD";
   let finalTotal = 0;
@@ -427,13 +434,28 @@ $("step2PayBtn").onclick = () => {
   
   let amountPaid = payMethod === "Prepaid" ? finalTotal : Math.round(finalTotal * 0.25);
 
-  // Fixed: Replaced phonepe:// with standard universal upi:// link to bypass merchant account block on personal UPI IDs
-  const upiLink = `upi://pay?pa=${UPI_ID}&pn=${STORE_NAME}&am=${amountPaid}&cu=INR`;
-  window.location.href = upiLink;
-
   // HIDE PAY BUTTON AND SHOW UTR INPUT SECTION
   $("step2PayBtn").classList.add("hidden");
   $("utrSection").classList.remove("hidden");
+
+  // Inject QR Code Box dynamically
+  let qrContainer = document.getElementById("qrDisplayBox");
+  if (!qrContainer) {
+      qrContainer = document.createElement("div");
+      qrContainer.id = "qrDisplayBox";
+      qrContainer.style.cssText = "text-align:center; background:#fff; padding:20px; border-radius:12px; margin-bottom:20px; border: 1px solid #e0e0e0; box-shadow: 0 4px 6px rgba(0,0,0,0.05);";
+      
+      // Insert right before UTR input box
+      $("utrSection").insertBefore(qrContainer, $("utrSection").firstChild);
+  }
+  
+  qrContainer.innerHTML = `
+      <h4 style="color:#111; margin-top:0; margin-bottom:12px; font-size:18px;">Scan To Pay: <span style="color:#e05555; font-weight:900;">₹${amountPaid}</span></h4>
+      <img src="62673.png" alt="QR Code Scanner" style="width:220px; max-width:100%; border-radius:8px; margin-bottom:15px; border:2px solid #f0f0f0; padding:10px;" />
+      <div style="color:#666; font-size:13px; margin-bottom:6px; text-transform:uppercase; letter-spacing:1px;">Or Pay via UPI ID</div>
+      <div style="font-weight:bold; font-size:17px; color:#333; background:#f9f9f9; padding:10px 15px; border-radius:8px; border:1px dashed #ccc; display:inline-block; letter-spacing:0.5px; margin-bottom:10px;">${UPI_ID}</div>
+      <p style="font-size:12px; color:#d9534f; margin-top:5px; line-height:1.5; font-weight:bold;">⚠️ Dhyan Dein: Payment complete karne ke baad neeche UTR / Reference Number daalna zaroori hai!</p>
+  `;
 };
 
 // FINAL CONFIRM UTR & SAVE TO FIREBASE
