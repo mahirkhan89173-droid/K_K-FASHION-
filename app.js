@@ -406,15 +406,15 @@ document.querySelectorAll('input[name="payMethod"]').forEach(radio => {
   radio.addEventListener("change", (e) => {
     if (e.target.value === "COD") {
        $("codWarningBox").classList.remove("hidden");
-       $("step2PayBtn").textContent = "Pay 25% Advance via UPI";
+       $("step2PayBtn").textContent = "Pay 25% Advance via PhonePe";
     } else {
        $("codWarningBox").classList.add("hidden");
-       $("step2PayBtn").textContent = "Pay 100% Now via UPI";
+       $("step2PayBtn").textContent = "Pay 100% Now via PhonePe";
     }
   });
 });
 
-// PAY BUTTON CLICK -> OPEN UPI & SHOW UTR INPUT
+// PAY BUTTON CLICK -> OPEN PHONEPE DIRECTLY & SHOW UTR INPUT
 $("step2PayBtn").onclick = () => {
   const payMethod = $("payPrepaid").checked ? "Prepaid" : "COD";
   let finalTotal = 0;
@@ -422,9 +422,9 @@ $("step2PayBtn").onclick = () => {
   
   let amountPaid = payMethod === "Prepaid" ? finalTotal : Math.round(finalTotal * 0.25);
 
-  // CREATE & TRIGGER UPI INTENT LINK
-  const upiLink = `upi://pay?pa=${UPI_ID}&pn=${STORE_NAME}&am=${amountPaid}&cu=INR`;
-  window.location.href = upiLink;
+  // CREATE & TRIGGER PHONEPE DIRECT INTENT LINK
+  const phonepeLink = `phonepe://pay?pa=${UPI_ID}&pn=${STORE_NAME}&am=${amountPaid}&cu=INR`;
+  window.location.href = phonepeLink;
 
   // HIDE PAY BUTTON AND SHOW UTR INPUT SECTION
   $("step2PayBtn").classList.add("hidden");
