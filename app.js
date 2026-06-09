@@ -296,9 +296,9 @@ $("cartOverlay").onclick = e => { if (e.target === $("cartOverlay")) { $("cartOv
 $("clearCartBtn").onclick = clearCart;
 
 /* ════════════════════════════════════
-   CHECKOUT OVERLAY (STEP 1, 2 & 3)
+   CHECKOUT OVERLAY (STEP 1, 2 & 3 WITH UTR VERIFY)
 ════════════════════════════════════ */
-const UPI_ID = "kkfashion@nyes"; // YAHAN APNA ASLI UPI ID DAALEIN
+const UPI_ID = "kasifpathan@upi"; // YAHAN APNA ASLI UPI ID DAALEIN
 const STORE_NAME = "K_K_Fashion";
 
 function directBuyCheckout(p) {
@@ -318,6 +318,8 @@ function resetCheckoutUI() {
   $("chkFooterTotalRow").classList.remove("hidden");
   $("step1NextBtn").classList.remove("hidden");
   $("step2PayBtn").classList.add("hidden");
+  $("utrSection").classList.add("hidden"); // UTR hide rahega start me
+  $("chkUtr").value = "";
   
   $("step1Indicator").className = "step-item active"; $("step1Circle").innerHTML = "1";
   $("line1").className = "step-line"; 
@@ -348,7 +350,7 @@ $("step1NextBtn").onclick = () => {
   
   $("step1NextBtn").classList.add("hidden");
   $("step2PayBtn").classList.remove("hidden");
-  $("chkFooterTotalRow").classList.add("hidden"); // Hide the normal footer total
+  $("chkFooterTotalRow").classList.add("hidden");
 
   // Stepper UI
   $("step1Indicator").classList.remove("active"); $("step1Indicator").classList.add("completed");
@@ -412,8 +414,31 @@ document.querySelectorAll('input[name="payMethod"]').forEach(radio => {
   });
 });
 
-// STEP 2 -> STEP 3 (PAYMENT & FIREBASE)
+// PAY BUTTON CLICK -> OPEN UPI & SHOW UTR INPUT
 $("step2PayBtn").onclick = () => {
+  const payMethod = $("payPrepaid").checked ? "Prepaid" : "COD";
+  let finalTotal = 0;
+  cart.forEach(i => finalTotal += finalPrice(i.product) * i.qty);
+  
+  let amountPaid = payMethod === "Prepaid" ? finalTotal : Math.round(finalTotal * 0.25);
+
+  // CREATE & TRIGGER UPI INTENT LINK
+  const upiLink = `upi://pay?pa=${UPI_ID}&pn=${STORE_NAME}&am=${amountPaid}&cu=INR`;
+  window.location.href = upiLink;
+
+  // HIDE PAY BUTTON AND SHOW UTR INPUT SECTION
+  $("step2PayBtn").classList.add("hidden");
+  $("utrSection").classList.remove("hidden");
+};
+
+// FINAL CONFIRM UTR & SAVE TO FIREBASE
+$("confirmOrderBtn").onclick = () => {
+  const utrValue = $("chkUtr").value.trim();
+  if (utrValue.length < 10) {
+    alert("Kripya payment karne ke baad 12-digit ka sahi UTR / Reference Number daalein!");
+    return;
+  }
+
   const payMethod = $("payPrepaid").checked ? "Prepaid" : "COD";
   let finalTotal = 0;
   cart.forEach(i => finalTotal += finalPrice(i.product) * i.qty);
@@ -429,12 +454,6 @@ $("step2PayBtn").onclick = () => {
     balanceDue = finalTotal - amountPaid;
   }
 
-  // CREATE UPI INTENT LINK
-  const upiLink = `upi://pay?pa=${UPI_ID}&pn=${STORE_NAME}&am=${amountPaid}&cu=INR`;
-
-  // Trigger UPI app picker in Android
-  window.location.href = upiLink;
-
   // Prepare Data for Firebase
   const orderData = { 
     name: $("chkName").value.trim(), 
@@ -448,12 +467,13 @@ $("step2PayBtn").onclick = () => {
     paymentMethod: payMethod,
     amountPaid: amountPaid,
     balanceDue: balanceDue,
+    utrNumber: utrValue,  // NEW UTR FIELD FOR ADMIN
     status: "Recent" 
   };
 
-  const btn = $("step2PayBtn"); btn.textContent = "Processing...";
+  const btn = $("confirmOrderBtn"); btn.textContent = "Placing Order...";
   
-  // Save to Firebase directly after intent fires
+  // Save to Firebase
   if (window.saveOrderToFirebase) {
     window.saveOrderToFirebase(orderData).then(success => {
       if (success) {
@@ -461,7 +481,7 @@ $("step2PayBtn").onclick = () => {
         if (window.fetchOrdersFromFirebase) window.fetchOrdersFromFirebase();
       } else {
         alert("Server error. Please try again.");
-        btn.textContent = "Pay Now via UPI App";
+        btn.textContent = "Confirm & Place Order";
       }
     });
   }
@@ -570,10 +590,12 @@ function renderOrdersByTab() {
     
     const dateStr = o.timestamp && o.timestamp.seconds ? new Date(o.timestamp.seconds * 1000).toLocaleString() : "Just Now";
     
-    // NEW: Pay Method Badge for Admin Panel
+    // Pay Method Badge and UTR Display
     const payBadge = o.paymentMethod === "COD" 
        ? `<span style="background:var(--destructive); color:#fff; padding:3px 8px; border-radius:4px; font-size:10px; margin-left:8px;">C.O.D (Due: ₹${o.balanceDue})</span>` 
        : `<span style="background:#4cc968; color:#fff; padding:3px 8px; border-radius:4px; font-size:10px; margin-left:8px; color:black; font-weight:bold;">PREPAID</span>`;
+    
+    const utrText = o.utrNumber ? `<div style="margin-top:4px; font-size:11px; color:var(--primary);">UTR/Ref: <strong>${o.utrNumber}</strong></div>` : "";
 
     const div = document.createElement("div"); div.className = "admin-order-card";
     div.innerHTML = `
@@ -584,6 +606,7 @@ function renderOrdersByTab() {
       <div class="order-cust">
         <strong>${o.name}</strong> (${o.mobile}) ${payBadge}<br>
         ${o.address}, ${o.state} - ${o.pincode}<br>
+        ${utrText}
         <small style="color:var(--muted)">${dateStr}</small>
       </div>
       <div class="order-items">${itemsHtml}</div>
