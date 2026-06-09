@@ -298,7 +298,7 @@ $("clearCartBtn").onclick = clearCart;
 /* ════════════════════════════════════
    CHECKOUT OVERLAY (STEP 1, 2 & 3 WITH UTR VERIFY)
 ════════════════════════════════════ */
-const UPI_ID = "pathaanshab786@ybl"; 
+const UPI_ID = "9521873437@ybl"; 
 const STORE_NAME = "KKFashion"; // Fixed: Removed underscores for standard compliance
 
 function directBuyCheckout(p) {
