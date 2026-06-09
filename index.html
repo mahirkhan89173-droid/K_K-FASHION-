@@ -371,7 +371,6 @@
         const list = [];
         snap.forEach(d => {
           const data = d.data();
-          // Backward compatibility for old single strings vs new arrays
           let imgData = [];
           if(Array.isArray(data.imageUrl)) { imgData = data.imageUrl; } 
           else if(data.imageUrl) { imgData = [data.imageUrl]; }
@@ -438,7 +437,6 @@
       const pSubCat  = document.getElementById("pSubCat").value || "";
       const pInStock = document.getElementById("pInStock").checked;
 
-      // Extract Array of Images
       const imgArray = rawImage.split(",").map(s => s.trim()).filter(Boolean);
 
       if (!pName || imgArray.length === 0 || !pPrice) { alert("Naam, Image URL(s) aur Price zaroori hain!"); return; }
