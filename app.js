@@ -298,7 +298,7 @@ $("clearCartBtn").onclick = clearCart;
 /* ════════════════════════════════════
    CHECKOUT OVERLAY (STEP 1, 2 & 3 WITH UTR VERIFY)
 ════════════════════════════════════ */
-const UPI_ID = "kkfashion@nyes"; // YAHAN APNA ASLI UPI ID DAALEIN
+const UPI_ID = "kkfashion@nyes"; 
 const STORE_NAME = "K_K_Fashion";
 
 function directBuyCheckout(p) {
@@ -318,7 +318,7 @@ function resetCheckoutUI() {
   $("chkFooterTotalRow").classList.remove("hidden");
   $("step1NextBtn").classList.remove("hidden");
   $("step2PayBtn").classList.add("hidden");
-  $("utrSection").classList.add("hidden"); // UTR hide rahega start me
+  $("utrSection").classList.add("hidden"); 
   $("chkUtr").value = "";
   
   $("step1Indicator").className = "step-item active"; $("step1Circle").innerHTML = "1";
@@ -367,7 +367,7 @@ function renderStep2() {
   const mainImg = (Array.isArray(p.image) && p.image.length > 0) ? p.image[0] : (typeof p.image === 'string' ? p.image : "placeholder.jpg");
   
   $("chkStep2Img").src = mainImg;
-  $("chkStep2Qty").value = item.qty > 7 ? 7 : item.qty; // Max 7 logic
+  $("chkStep2Qty").value = item.qty > 7 ? 7 : item.qty; 
   
   updateStep2Summary();
 
@@ -404,6 +404,11 @@ function updateStep2Summary() {
 // Payment Option Toggle Logic
 document.querySelectorAll('input[name="payMethod"]').forEach(radio => {
   radio.addEventListener("change", (e) => {
+    
+    // Yahan fix lagaya hai - Pay button wapas laao aur UTR chhupao
+    $("step2PayBtn").classList.remove("hidden");
+    $("utrSection").classList.add("hidden");
+
     if (e.target.value === "COD") {
        $("codWarningBox").classList.remove("hidden");
        $("step2PayBtn").textContent = "Pay 25% Advance via PhonePe";
@@ -467,7 +472,7 @@ $("confirmOrderBtn").onclick = () => {
     paymentMethod: payMethod,
     amountPaid: amountPaid,
     balanceDue: balanceDue,
-    utrNumber: utrValue,  // NEW UTR FIELD FOR ADMIN
+    utrNumber: utrValue,
     status: "Recent" 
   };
 
@@ -491,7 +496,7 @@ $("confirmOrderBtn").onclick = () => {
 function showStep3Success(payMethod, paid, due) {
   $("checkoutStep2").classList.add("hidden");
   $("checkoutStep3").classList.remove("hidden");
-  $("checkoutFooter").classList.add("hidden"); // Footer completely hidden here
+  $("checkoutFooter").classList.add("hidden"); 
   
   $("step2Indicator").classList.remove("active"); $("step2Indicator").classList.add("completed");
   $("step2Circle").innerHTML = "✔"; $("line2").classList.add("completed");
