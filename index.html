@@ -139,7 +139,7 @@
           <div class="step-line" id="line2"></div>
           
           <div class="step-item" id="step3Indicator">
-            <div class="step-circle" id="step2Circle">3</div>
+            <div class="step-circle" id="step3Circle">3</div>
             <span class="step-label">Confirm</span>
           </div>
         </div>
@@ -422,6 +422,7 @@
     import { getAnalytics }     from "https://www.gstatic.com/firebasejs/12.14.0/firebase-analytics.js";
     import { getFirestore, collection, addDoc, getDocs, doc, deleteDoc, getDoc, setDoc, updateDoc }
       from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
+    // IMPORT FIREBASE STORAGE MODULES
     import { getStorage, ref, deleteObject } 
       from "https://www.gstatic.com/firebasejs/12.14.0/firebase-storage.js";
 
@@ -438,6 +439,7 @@
     const fbApp = initializeApp(firebaseConfig);
     getAnalytics(fbApp);
     const db = getFirestore(fbApp);
+    // INITIALIZE STORAGE
     const storage = getStorage(fbApp);
 
     async function fetchSettings() {
@@ -511,8 +513,10 @@
       try { await setDoc(doc(db, "settings", "storeData"), { mainCategories: cats }, { merge: true }); } catch(e) {}
     };
 
+    // UPDATED: DELETE PRODUCT & ITS IMAGES FROM FIREBASE STORAGE
     window.deleteProductFromFirebase = async function(id) {
       try { 
+        // 1. Fetch product to get image URLs
         const productSnap = await getDoc(doc(db, "products", id));
         if (productSnap.exists()) {
             const data = productSnap.data();
@@ -520,9 +524,11 @@
             if(Array.isArray(data.imageUrl)) { imgUrls = data.imageUrl; }
             else if(data.imageUrl) { imgUrls = [data.imageUrl]; }
 
+            // 2. Delete each image from Firebase Storage if it's a firebase storage link
             for (const url of imgUrls) {
                if (url.includes("firebasestorage.googleapis.com")) {
                   try {
+                      // Extract storage path from URL
                       const storageRef = ref(storage, url);
                       await deleteObject(storageRef);
                       console.log("Deleted image from storage:", url);
@@ -532,6 +538,8 @@
                }
             }
         }
+        
+        // 3. Delete from Firestore Database
         await deleteDoc(doc(db, "products", id)); 
         console.log("Product completely removed.");
       } catch(e) {
