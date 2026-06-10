@@ -258,9 +258,15 @@ body.no-scroll { overflow: hidden !important; }
 ::-webkit-scrollbar-track { background: var(--bg2); }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
 
-/* =========================================
-   FLOATING WHATSAPP BUTTON WITH HELP TEXT
-========================================= */
+/* ==========================================================
+   FLOATING WHATSAPP BUTTON WITH HELP TEXT (SPLASH SCREEN FIXED)
+========================================================== */
+@keyframes waDelayShow {
+    0% { opacity: 0; pointer-events: none; transform: scale(0.8); }
+    95% { opacity: 0; pointer-events: none; }
+    100% { opacity: 1; pointer-events: auto; transform: scale(1); }
+}
+
 .whatsapp-float {
     position: fixed;
     bottom: 85px;      
@@ -271,6 +277,8 @@ body.no-scroll { overflow: hidden !important; }
     text-decoration: none;
     z-index: 99999 !important; 
     cursor: pointer;
+    /* Ye line icon ko Splash screen (Logo screen) ke dauran chupa kar rakhegi */
+    animation: waDelayShow 3.2s ease forwards;
 }
 
 .whatsapp-icon {
