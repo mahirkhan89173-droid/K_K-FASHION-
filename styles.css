@@ -277,6 +277,7 @@ body.no-scroll { overflow: hidden !important; }
     text-decoration: none;
     z-index: 99999 !important; 
     cursor: pointer;
+    /* Ye line icon ko Splash screen (Logo screen) ke dauran chupa kar rakhegi */
     animation: waDelayShow 3.2s ease forwards;
 }
 
