@@ -18,11 +18,11 @@ body.no-scroll { overflow: hidden !important; }
 
 /* STRICT LOGIN SCREEN STYLES (NEW) */
 .login-screen { position: fixed; inset: 0; z-index: 250; background: var(--bg); display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px); }
-.google-btn { display: flex; align-items: center; justify-content: center; gap: 10px; background: #fff; color: #000; border: none; font-weight: 600; font-size: 15px; padding: 14px; border-radius: 12px; cursor: pointer; width: 100%; transition: transform 0.2s; box-shadow: 0 4px 12px rgba(255,255,255,0.1); }
+.google-btn { display: flex; align-items: center; justify-content: center; background: #fff; color: #000; border: none; font-weight: 600; font-size: 15px; padding: 14px; border-radius: 12px; cursor: pointer; width: 100%; transition: transform 0.2s; box-shadow: 0 4px 12px rgba(255,255,255,0.1); }
 .google-btn:active { transform: scale(0.96); }
 
 /* SPLASH */
-.splash { position: fixed; inset: 0; z-index: 200; display: flex; flex-direction: column; align-items: center; justify-content: center; background: var(--bg); gap: 0; animation: splashFadeIn 0.6s ease; }
+.splash { position: fixed; inset: 0; z-index: 50; display: flex; flex-direction: column; align-items: center; justify-content: center; background: var(--bg); gap: 0; animation: splashFadeIn 0.6s ease; }
 .splash-glow { position: absolute; width: 320px; height: 240px; border-radius: 50%; background: radial-gradient(ellipse, rgba(201,168,76,0.14) 0%, transparent 70%); animation: splashGlowPulse 2.5s ease-in-out infinite; pointer-events: none; }
 .splash-oval { position: relative; width: 230px; height: 148px; border: 1.5px solid rgba(201,168,76,0.55); border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; box-shadow: 0 0 35px rgba(201,168,76,0.13), inset 0 0 20px rgba(201,168,76,0.04); animation: splashLogoReveal 0.9s cubic-bezier(0.16,1,0.3,1) 0.3s both; }
 .splash-brand { font-family: var(--font-display); font-size: 60px; font-weight: 700; letter-spacing: 0.1em; background: linear-gradient(160deg, #f0d97a 0%, #C9A84C 45%, #9a7120 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; line-height: 1; }
@@ -103,7 +103,7 @@ body.no-scroll { overflow: hidden !important; }
 .trash { background: none; border: none; color: var(--destructive); cursor: pointer; font-size: 16px; padding: 4px; }
 
 /* ADMIN MODALS */
-.pin-box { position: relative; background: var(--card); width: 100%; max-width: 320px; margin: 0 20px; border-radius: 20px; padding: 36px 28px; text-align: center; display: flex; flex-direction: column; align-items: center; border: 1px solid var(--border2); box-shadow: 0 10px 40px rgba(0,0,0,0.6); }
+.pin-box { position: relative; background: var(--card); width: 100%; max-width: 320px; margin: 0 20px; border-radius: 20px; padding: 36px 28px; text-align: center; display: flex; flex-direction: column; align-items: center; border: 1px solid var(--border2); }
 .wide-box { max-width: 420px; }
 .close-abs { position: absolute; right: 10px; top: 10px; }
 .pin-input { margin-top: 20px; width: 160px; border: 1px solid var(--border2); background: var(--bg2); color: var(--fg); border-radius: 10px; padding: 12px; text-align: center; font-size: 18px; letter-spacing: 6px; }
