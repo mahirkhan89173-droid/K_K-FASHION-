@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════
-   K_K FASHION — app.js (FINAL - STRICT LOGIN BEFORE APP)
+   K_K FASHION — app.js (FINAL - EXTERNAL LOGIC)
 ═══════════════════════════════════════════════════════ */
 
 const load = (k, fb) => { try { const r = localStorage.getItem(k); return r ? JSON.parse(r) : fb; } catch { return fb; } };
@@ -15,7 +15,6 @@ let activeSubCat         = "All";
 let editingProductId     = null;
 let searchQuery          = "";
 let currentDetailProduct = null;
-let currentUser          = null; // User State
 
 const genId      = () => "cat_" + Date.now() + Math.floor(Math.random() * 1000);
 const finalPrice = p  => Math.round(p.price - (p.price * (p.discount || 0)) / 100 + (p.extra || 0));
@@ -39,67 +38,10 @@ window.updateProductsFromFirebase = function(fbProducts) {
   if (!$("adminPanel").classList.contains("hidden")) renderAdmin();
 };
 
-/* --- SPLASH & STRICT LOGIN LOGIC --- */
-window.addEventListener("DOMContentLoaded", () => {
-  setTimeout(() => {
-    const splash = $("splash"); 
-    splash.style.transition = "opacity 0.5s ease"; 
-    splash.style.opacity = "0";
-    
-    setTimeout(() => { 
-      splash.classList.add("hidden"); 
-      
-      // CHECK FIREBASE AUTH STATE
-      if (window.onAuthStateChanged && window.firebaseAuth) {
-        window.onAuthStateChanged(window.firebaseAuth, (user) => {
-          currentUser = user;
-          if (user) {
-            // Logged in: Hide login screen, show app
-            if($("loginScreen")) $("loginScreen").classList.add("hidden");
-            $("app").classList.remove("hidden");
-            
-            // Set Profile Icon & Name
-            if($("authBtn")) $("authBtn").innerHTML = `<img src="${user.photoURL}" style="width:26px; height:26px; border-radius:50%; border:1px solid var(--primary); object-fit:cover;">`;
-            if($("chkName")) $("chkName").value = user.displayName || "";
-          } else {
-            // Not Logged in: Hide app, show login screen
-            $("app").classList.add("hidden");
-            if($("loginScreen")) $("loginScreen").classList.remove("hidden");
-            
-            // Reset Profile Icon
-            if($("authBtn")) $("authBtn").innerHTML = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`;
-          }
-        });
-      } else {
-        // Fallback if firebase not loaded yet
-        $("app").classList.remove("hidden");
-      }
-    }, 500);
-  }, 2500);
-});
-
-/* --- GOOGLE LOGIN BUTTON CLICK --- */
-if($("mainGoogleLoginBtn")) {
-  $("mainGoogleLoginBtn").onclick = async () => {
-    const btn = $("mainGoogleLoginBtn");
-    const originalText = btn.innerHTML;
-    btn.innerHTML = "Processing...";
-    try {
-      await window.signInWithPopup(window.firebaseAuth, window.firebaseProvider);
-      // onAuthStateChanged will automatically hide the login screen and show the app
-    } catch(error) {
-      console.error("Login Error:", error);
-      alert("Login me dikkat aayi: " + error.message);
-      btn.innerHTML = originalText;
-    }
-  };
-}
-
-/* --- LOGOUT BUTTON (Header Profile Icon) --- */
 if($("authBtn")) {
   $("authBtn").onclick = () => {
-    if (currentUser) {
-      if(confirm(`Hi ${currentUser.displayName}!\nAap Logout karna chahte hain?`)) {
+    if (window.currentUser) {
+      if(confirm(`Hi ${window.currentUser.displayName}!\nAap Logout karna chahte hain?`)) {
         if(window.signOut) window.signOut(window.firebaseAuth);
       }
     }
@@ -424,8 +366,7 @@ $("confirmOrderBtn").onclick = () => {
   let amountPaid = 0, balanceDue = 0;
   if (payMethod === "Prepaid") { amountPaid = finalTotal; balanceDue = 0; } else { amountPaid = Math.round(finalTotal * 0.25); balanceDue = finalTotal - amountPaid; }
   
-  // ADDED: userId attach to order if logged in
-  const userId = currentUser ? currentUser.uid : "guest";
+  const userId = window.currentUser ? window.currentUser.uid : "guest";
 
   const orderData = { name: $("chkName").value.trim(), mobile: $("chkMobile").value.trim(), address: $("chkAddress").value.trim(), state: $("chkState").value.trim(), pincode: $("chkPincode").value.trim(), landmark: $("chkLandmark").value.trim(), items: cart, totalAmount: finalTotal, paymentMethod: payMethod, amountPaid: amountPaid, balanceDue: balanceDue, utrNumber: utrValue, status: "Recent", userId: userId };
   const btn = $("confirmOrderBtn"); btn.textContent = "Placing Order...";
