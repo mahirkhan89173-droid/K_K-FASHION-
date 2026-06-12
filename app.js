@@ -611,6 +611,7 @@ $("successCloseBtn").onclick = () => {
   resetCheckoutUI();
 };
 
+
 /* ════════════════════════════════════
    ADMIN PIN & PANEL LOGIC
 ════════════════════════════════════ */
@@ -796,14 +797,3 @@ $("imageViewer").onclick = (e) => {
 ════════════════════════════════════ */
 preventZoom(); 
 renderCartCount();
-
-/* ════════════════════════════════════
-   GOOGLE LOGOUT EVENT (NEW)
-════════════════════════════════════ */
-if ($("authBtn")) {
-  $("authBtn").onclick = () => {
-    if (confirm("Kya aap logout karna chahte hain?")) {
-      if (window.logoutUser) window.logoutUser();
-    }
-  };
-}
