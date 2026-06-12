@@ -259,7 +259,7 @@ body.no-scroll { overflow: hidden !important; }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
 
 /* ==========================================================
-   FLOATING WHATSAPP BUTTON WITH HELP TEXT (SPLASH SCREEN FIXED)
+   FLOATING WHATSAPP BUTTON WITH HELP TEXT
 ========================================================== */
 @keyframes waDelayShow {
     0% { opacity: 0; pointer-events: none; transform: scale(0.8); }
@@ -277,7 +277,6 @@ body.no-scroll { overflow: hidden !important; }
     text-decoration: none;
     z-index: 99999 !important; 
     cursor: pointer;
-    /* Ye line icon ko Splash screen (Logo screen) ke dauran chupa kar rakhegi */
     animation: waDelayShow 3.2s ease forwards;
 }
 
@@ -301,4 +300,40 @@ body.no-scroll { overflow: hidden !important; }
     text-transform: uppercase;
     letter-spacing: 0.5px;
     box-shadow: 0px 2px 5px rgba(0,0,0,0.2);
+}
+
+/* ==========================================================
+   GOOGLE AUTH SCREEN CSS
+========================================================== */
+.auth-screen { 
+  position: fixed; inset: 0; z-index: 1000; 
+  display: flex; align-items: center; justify-content: center; 
+  background: var(--bg); animation: overlayFade 0.4s ease; 
+}
+.auth-card { 
+  background: var(--card); border: 1px solid var(--border); 
+  border-radius: 20px; padding: 40px 30px; 
+  text-align: center; max-width: 340px; width: 90%; 
+  box-shadow: 0 10px 40px rgba(0,0,0,0.7); 
+}
+.auth-brand { 
+  font-family: var(--font-display); font-size: 38px; font-weight: 700; 
+  background: linear-gradient(135deg, #e8d08a, #C9A84C, #a87f28); 
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; 
+  margin-bottom: 8px; letter-spacing: 0.05em; 
+}
+.auth-sub { 
+  font-size: 14px; color: var(--muted); margin-bottom: 30px; 
+}
+.google-btn { 
+  display: flex; align-items: center; justify-content: center; gap: 12px; 
+  width: 100%; background: #ffffff; color: #111; border: none; 
+  padding: 12px; border-radius: 12px; font-size: 15px; font-weight: 600; 
+  cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; 
+}
+.google-btn:hover { 
+  transform: translateY(-2px); box-shadow: 0 4px 15px rgba(255,255,255,0.1); 
+}
+.google-btn img { 
+  width: 20px; height: 20px; 
 }
