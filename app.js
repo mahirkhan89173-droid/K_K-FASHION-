@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════
-   K_K FASHION — app.js (FINAL - ROCK SOLID CHECKOUT)
+   K_K FASHION — app.js (FINAL - ROCK SOLID CHECKOUT + AUTH)
 ═══════════════════════════════════════════════════════ */
 
 const load = (k, fb) => { try { const r = localStorage.getItem(k); return r ? JSON.parse(r) : fb; } catch { return fb; } };
@@ -15,6 +15,7 @@ let activeSubCat         = "All";
 let editingProductId     = null;
 let searchQuery          = "";
 let currentDetailProduct = null;
+let isAppInitialized     = false;
 
 const genId      = () => "cat_" + Date.now() + Math.floor(Math.random() * 1000);
 const finalPrice = p  => Math.round(p.price - (p.price * (p.discount || 0)) / 100 + (p.extra || 0));
@@ -44,14 +45,70 @@ window.updateProductsFromFirebase = function(fbProducts) {
 };
 
 /* ════════════════════════════════════
-   SPLASH
+   AUTH & SPLASH LOGIC
 ════════════════════════════════════ */
 window.addEventListener("DOMContentLoaded", () => {
-  setTimeout(() => {
-    const splash = $("splash"); splash.style.transition = "opacity 0.5s ease"; splash.style.opacity = "0";
-    setTimeout(() => { splash.classList.add("hidden"); $("app").classList.remove("hidden"); }, 500);
-  }, 2500);
+  // Check auth state securely
+  if(window.onAuthStateChanged && window.fbAuth) {
+    window.onAuthStateChanged(window.fbAuth, (user) => {
+      if (user) {
+        // User is logged in
+        $("authScreen").classList.add("hidden");
+        $("logoutBtn").classList.remove("hidden"); 
+        
+        // Show splash only once per session load
+        if(!isAppInitialized) {
+          showSplashAndStart();
+          isAppInitialized = true;
+        }
+      } else {
+        // Not logged in
+        $("authScreen").classList.remove("hidden");
+        $("app").classList.add("hidden");
+        $("splash").classList.add("hidden");
+        $("logoutBtn").classList.add("hidden");
+      }
+    });
+  }
 });
+
+function showSplashAndStart() {
+  const splash = $("splash"); 
+  splash.classList.remove("hidden");
+  setTimeout(() => { 
+     splash.style.transition = "opacity 0.5s ease"; 
+     splash.style.opacity = "0";
+     setTimeout(() => { 
+        splash.classList.add("hidden"); 
+        $("app").classList.remove("hidden"); 
+     }, 500);
+  }, 2500);
+}
+
+// Google Login Button Click
+if($("googleLoginBtn")) {
+  $("googleLoginBtn").onclick = () => {
+    const provider = new window.GoogleAuthProvider();
+    window.signInWithPopup(window.fbAuth, provider)
+      .then((result) => { 
+        console.log("Logged in successfully!"); 
+      })
+      .catch((error) => { 
+        alert("Login failed: " + error.message); 
+      });
+  };
+}
+
+// Logout Button Click
+if($("logoutBtn")) {
+  $("logoutBtn").onclick = () => {
+    if(confirm("Are you sure you want to logout?")) {
+      window.signOut(window.fbAuth).then(() => {
+         window.location.reload();
+      });
+    }
+  };
+}
 
 /* ════════════════════════════════════
    MAIN CATEGORY & SUB-CATEGORY BAR
