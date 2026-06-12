@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════
-   K_K FASHION — app.js (FINAL - WITH GOOGLE AUTH)
+   K_K FASHION — app.js (FINAL - STRICT LOGIN BEFORE APP)
 ═══════════════════════════════════════════════════════ */
 
 const load = (k, fb) => { try { const r = localStorage.getItem(k); return r ? JSON.parse(r) : fb; } catch { return fb; } };
@@ -15,9 +15,7 @@ let activeSubCat         = "All";
 let editingProductId     = null;
 let searchQuery          = "";
 let currentDetailProduct = null;
-
-// ADDED: User Auth State
-let currentUser = null; 
+let currentUser          = null; // User State
 
 const genId      = () => "cat_" + Date.now() + Math.floor(Math.random() * 1000);
 const finalPrice = p  => Math.round(p.price - (p.price * (p.discount || 0)) / 100 + (p.extra || 0));
@@ -41,25 +39,72 @@ window.updateProductsFromFirebase = function(fbProducts) {
   if (!$("adminPanel").classList.contains("hidden")) renderAdmin();
 };
 
+/* --- SPLASH & STRICT LOGIN LOGIC --- */
 window.addEventListener("DOMContentLoaded", () => {
   setTimeout(() => {
-    const splash = $("splash"); splash.style.transition = "opacity 0.5s ease"; splash.style.opacity = "0";
-    setTimeout(() => { splash.classList.add("hidden"); $("app").classList.remove("hidden"); }, 500);
-  }, 2500);
-
-  // ADDED: Track User Auth State on load
-  if (window.onAuthStateChanged && window.firebaseAuth) {
-    window.onAuthStateChanged(window.firebaseAuth, (user) => {
-      currentUser = user;
-      if (user) {
-        if($("authBtn")) $("authBtn").innerHTML = `<img src="${user.photoURL}" style="width:26px; height:26px; border-radius:50%; border:1px solid var(--primary); object-fit:cover;">`;
-        if($("chkName")) $("chkName").value = user.displayName || "";
+    const splash = $("splash"); 
+    splash.style.transition = "opacity 0.5s ease"; 
+    splash.style.opacity = "0";
+    
+    setTimeout(() => { 
+      splash.classList.add("hidden"); 
+      
+      // CHECK FIREBASE AUTH STATE
+      if (window.onAuthStateChanged && window.firebaseAuth) {
+        window.onAuthStateChanged(window.firebaseAuth, (user) => {
+          currentUser = user;
+          if (user) {
+            // Logged in: Hide login screen, show app
+            if($("loginScreen")) $("loginScreen").classList.add("hidden");
+            $("app").classList.remove("hidden");
+            
+            // Set Profile Icon & Name
+            if($("authBtn")) $("authBtn").innerHTML = `<img src="${user.photoURL}" style="width:26px; height:26px; border-radius:50%; border:1px solid var(--primary); object-fit:cover;">`;
+            if($("chkName")) $("chkName").value = user.displayName || "";
+          } else {
+            // Not Logged in: Hide app, show login screen
+            $("app").classList.add("hidden");
+            if($("loginScreen")) $("loginScreen").classList.remove("hidden");
+            
+            // Reset Profile Icon
+            if($("authBtn")) $("authBtn").innerHTML = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`;
+          }
+        });
       } else {
-        if($("authBtn")) $("authBtn").innerHTML = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`;
+        // Fallback if firebase not loaded yet
+        $("app").classList.remove("hidden");
       }
-    });
-  }
+    }, 500);
+  }, 2500);
 });
+
+/* --- GOOGLE LOGIN BUTTON CLICK --- */
+if($("mainGoogleLoginBtn")) {
+  $("mainGoogleLoginBtn").onclick = async () => {
+    const btn = $("mainGoogleLoginBtn");
+    const originalText = btn.innerHTML;
+    btn.innerHTML = "Processing...";
+    try {
+      await window.signInWithPopup(window.firebaseAuth, window.firebaseProvider);
+      // onAuthStateChanged will automatically hide the login screen and show the app
+    } catch(error) {
+      console.error("Login Error:", error);
+      alert("Login me dikkat aayi: " + error.message);
+      btn.innerHTML = originalText;
+    }
+  };
+}
+
+/* --- LOGOUT BUTTON (Header Profile Icon) --- */
+if($("authBtn")) {
+  $("authBtn").onclick = () => {
+    if (currentUser) {
+      if(confirm(`Hi ${currentUser.displayName}!\nAap Logout karna chahte hain?`)) {
+        if(window.signOut) window.signOut(window.firebaseAuth);
+      }
+    }
+  };
+}
 
 function renderMainCats() {
   const wrap = $("mainCats"); wrap.innerHTML = "";
@@ -296,28 +341,14 @@ if($("copyUpiBtn")) {
   };
 }
 
-// UPDATED: CHECK LOGIN BEFORE BUY NOW
 function directBuyCheckout(p) {
-  if (!currentUser) {
-     $("authOverlay").classList.remove("hidden"); // Login box kholo
-     return;
-  }
   preventZoom();
   cart = [{ product: p, qty: 1 }]; save("knk_cart", cart); renderCartCount();
   $("prodDetail").classList.add("hidden"); $("prodDetail").classList.remove("closing"); currentDetailProduct = null;
   openCheckout();
 }
 
-// UPDATED: CHECK LOGIN BEFORE CART CHECKOUT
-$("checkoutBtn").onclick = () => { 
-  if (!cart.length) return; 
-  if (!currentUser) {
-     $("authOverlay").classList.remove("hidden"); // Login box kholo
-     return;
-  }
-  $("cartOverlay").classList.add("hidden"); 
-  openCheckout(); 
-};
+$("checkoutBtn").onclick = () => { if (!cart.length) return; $("cartOverlay").classList.add("hidden"); openCheckout(); };
 
 function resetCheckoutUI() {
   $("checkoutStep1").classList.remove("hidden"); $("checkoutStep2").classList.add("hidden"); if($("checkoutStep3")) $("checkoutStep3").classList.add("hidden");
@@ -392,7 +423,11 @@ $("confirmOrderBtn").onclick = () => {
   const payMethod = $("payPrepaid").checked ? "Prepaid" : "COD"; let finalTotal = 0; cart.forEach(i => finalTotal += finalPrice(i.product) * i.qty);
   let amountPaid = 0, balanceDue = 0;
   if (payMethod === "Prepaid") { amountPaid = finalTotal; balanceDue = 0; } else { amountPaid = Math.round(finalTotal * 0.25); balanceDue = finalTotal - amountPaid; }
-  const orderData = { name: $("chkName").value.trim(), mobile: $("chkMobile").value.trim(), address: $("chkAddress").value.trim(), state: $("chkState").value.trim(), pincode: $("chkPincode").value.trim(), landmark: $("chkLandmark").value.trim(), items: cart, totalAmount: finalTotal, paymentMethod: payMethod, amountPaid: amountPaid, balanceDue: balanceDue, utrNumber: utrValue, status: "Recent", userId: currentUser ? currentUser.uid : "guest" };
+  
+  // ADDED: userId attach to order if logged in
+  const userId = currentUser ? currentUser.uid : "guest";
+
+  const orderData = { name: $("chkName").value.trim(), mobile: $("chkMobile").value.trim(), address: $("chkAddress").value.trim(), state: $("chkState").value.trim(), pincode: $("chkPincode").value.trim(), landmark: $("chkLandmark").value.trim(), items: cart, totalAmount: finalTotal, paymentMethod: payMethod, amountPaid: amountPaid, balanceDue: balanceDue, utrNumber: utrValue, status: "Recent", userId: userId };
   const btn = $("confirmOrderBtn"); btn.textContent = "Placing Order...";
   if(window.paymentInterval) clearInterval(window.paymentInterval); 
   if (window.saveOrderToFirebase) { window.saveOrderToFirebase(orderData).then(success => { if (success) { showStep3Success(payMethod, amountPaid, balanceDue); if (window.fetchOrdersFromFirebase) window.fetchOrdersFromFirebase(); } else { alert("Server error. Please try again."); btn.textContent = "Verify Payment & Place Order"; } }); } else { showStep3Success(payMethod, amountPaid, balanceDue); }
@@ -502,38 +537,3 @@ $("closeViewerBtn").onclick = () => { $("imageViewer").classList.add("hidden"); 
 $("imageViewer").onclick = (e) => { if (e.target === $("imageViewer") || e.target === $("fullImage")) { $("imageViewer").classList.add("hidden"); preventZoom(); } };
 
 preventZoom(); renderCartCount();
-
-/* ════════════════════════════════════
-   GOOGLE AUTH LOGIC (NEW)
-════════════════════════════════════ */
-
-if($("authBtn")) {
-  $("authBtn").onclick = () => {
-    if (currentUser) {
-      if(confirm(`Hi ${currentUser.displayName}!\nLogout karna chahte ho?`)) {
-        if(window.signOut) window.signOut(window.firebaseAuth);
-      }
-    } else {
-      $("authOverlay").classList.remove("hidden");
-    }
-  };
-}
-
-if($("authClose")) {
-  $("authClose").onclick = () => $("authOverlay").classList.add("hidden");
-}
-
-if($("googleSignInBtn")) {
-  $("googleSignInBtn").onclick = async () => {
-    const btn = $("googleSignInBtn");
-    btn.textContent = "Wait...";
-    try {
-      await window.signInWithPopup(window.firebaseAuth, window.firebaseProvider);
-      $("authOverlay").classList.add("hidden");
-    } catch(error) {
-      console.error("Login failed:", error);
-      alert("Login nahi ho paya. Error: " + error.message);
-    }
-    btn.innerHTML = `<img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18" alt="Google"> Continue with Google`;
-  };
-}
