@@ -30,13 +30,25 @@
     <p class="splash-tagline">Premium Quality</p>
   </div>
 
+  <div id="loginScreen" class="login-screen hidden">
+    <div class="login-box">
+      <div class="brand-mark" style="font-size: 42px; margin-bottom: 5px; display: inline-block;">K_K</div>
+      <div class="brand-name" style="font-size: 16px; margin-bottom: 25px; color: var(--fg); letter-spacing: 0.1em;">FASHION</div>
+      <h2 style="font-family: var(--font-display); font-size: 26px; color: var(--primary); margin-bottom: 8px;">Welcome Back</h2>
+      <p style="color: var(--muted); font-size: 13px; margin-bottom: 30px;">Please verify your identity to access the store.</p>
+      <button id="mainGoogleLoginBtn" class="google-btn">
+        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20" alt="Google"> Continue with Google
+      </button>
+    </div>
+  </div>
+
   <div id="app" class="app hidden">
     <header class="header">
       <button id="logoBtn" class="logo-btn" aria-label="Store logo">
         <span class="brand-mark">K_K</span>
         <span class="brand-name">Fashion</span>
       </button>
-      
+
       <button id="authBtn" class="icon-btn" aria-label="User Profile" style="margin-left: auto; margin-right: 10px;">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
       </button>
@@ -123,18 +135,6 @@
         <button id="checkoutBtn" class="btn-primary full">Proceed to Checkout</button>
         <button id="clearCartBtn" class="link">Clear cart</button>
       </div>
-    </div>
-  </div>
-
-  <div id="authOverlay" class="overlay center hidden" style="z-index: 115;">
-    <div class="pin-box">
-      <button id="authClose" class="icon-btn close-abs">✕</button>
-      <div class="lock" style="font-size:30px; margin-bottom:10px;">👤</div>
-      <h2>Welcome</h2>
-      <p style="font-size:13px; color:var(--muted); margin-bottom:15px;">Please login to continue</p>
-      <button id="googleSignInBtn" class="btn-primary full" style="display: flex; align-items: center; justify-content: center; gap: 10px; background: #fff; color: #000; border: 1px solid #ddd; font-weight: 600;">
-        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18" alt="Google"> Continue with Google
-      </button>
     </div>
   </div>
 
@@ -442,7 +442,7 @@
     import { getStorage, ref, deleteObject } 
       from "https://www.gstatic.com/firebasejs/12.14.0/firebase-storage.js";
     
-    // ADDED: Firebase Auth Modules
+    // FIREBASE AUTH IMPORTS
     import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } 
       from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
 
@@ -461,7 +461,7 @@
     const db = getFirestore(fbApp);
     const storage = getStorage(fbApp);
 
-    // ADDED: Initialize Auth & make it global for app.js
+    // INIT AUTH GLOBALLY
     const auth = getAuth(fbApp);
     const provider = new GoogleAuthProvider();
     window.firebaseAuth = auth;
@@ -563,7 +563,9 @@
         }
         await deleteDoc(doc(db, "products", id)); 
         console.log("Product completely removed.");
-      } catch(e) { console.error("Error deleting product completely:", e); }
+      } catch(e) {
+          console.error("Error deleting product completely:", e);
+      }
     };
 
     window.updateProductInFirebase = async function(id, data) {
