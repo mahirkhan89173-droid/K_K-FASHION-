@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════
-   K_K FASHION — app.js (FINAL - ROCK SOLID CHECKOUT)
+   K_K FASHION — app.js (FINAL - WITH GOOGLE AUTH)
 ═══════════════════════════════════════════════════════ */
 
 const load = (k, fb) => { try { const r = localStorage.getItem(k); return r ? JSON.parse(r) : fb; } catch { return fb; } };
@@ -16,20 +16,18 @@ let editingProductId     = null;
 let searchQuery          = "";
 let currentDetailProduct = null;
 
+// ADDED: User Auth State
+let currentUser = null; 
+
 const genId      = () => "cat_" + Date.now() + Math.floor(Math.random() * 1000);
 const finalPrice = p  => Math.round(p.price - (p.price * (p.discount || 0)) / 100 + (p.extra || 0));
 const getCat     = id => mainCategories.find(c => c.id === id);
 
-// SCROLL & ZOOM LOCK UTILS
 const lockScroll   = () => document.body.classList.add("no-scroll");
 const unlockScroll = () => document.body.classList.remove("no-scroll");
-
 const allowZoom   = () => document.querySelector('meta[name="viewport"]').setAttribute("content", "width=device-width, initial-scale=1.0, maximum-scale=5.0");
 const preventZoom = () => document.querySelector('meta[name="viewport"]').setAttribute("content", "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no");
 
-/* ════════════════════════════════════
-   FIREBASE CALLBACKS
-════════════════════════════════════ */
 window.updateCategoriesFromFirebase = function(cats) {
   mainCategories = cats || [];
   if (!activeMainCatId && mainCategories.length > 0) activeMainCatId = mainCategories[0].id;
@@ -43,19 +41,26 @@ window.updateProductsFromFirebase = function(fbProducts) {
   if (!$("adminPanel").classList.contains("hidden")) renderAdmin();
 };
 
-/* ════════════════════════════════════
-   SPLASH
-════════════════════════════════════ */
 window.addEventListener("DOMContentLoaded", () => {
   setTimeout(() => {
     const splash = $("splash"); splash.style.transition = "opacity 0.5s ease"; splash.style.opacity = "0";
     setTimeout(() => { splash.classList.add("hidden"); $("app").classList.remove("hidden"); }, 500);
   }, 2500);
+
+  // ADDED: Track User Auth State on load
+  if (window.onAuthStateChanged && window.firebaseAuth) {
+    window.onAuthStateChanged(window.firebaseAuth, (user) => {
+      currentUser = user;
+      if (user) {
+        if($("authBtn")) $("authBtn").innerHTML = `<img src="${user.photoURL}" style="width:26px; height:26px; border-radius:50%; border:1px solid var(--primary); object-fit:cover;">`;
+        if($("chkName")) $("chkName").value = user.displayName || "";
+      } else {
+        if($("authBtn")) $("authBtn").innerHTML = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`;
+      }
+    });
+  }
 });
 
-/* ════════════════════════════════════
-   MAIN CATEGORY & SUB-CATEGORY BAR
-════════════════════════════════════ */
 function renderMainCats() {
   const wrap = $("mainCats"); wrap.innerHTML = "";
   mainCategories.forEach((cat, i) => {
@@ -89,9 +94,6 @@ function renderSubCats() {
   });
 }
 
-/* ════════════════════════════════════
-   SEARCH
-════════════════════════════════════ */
 function searchMatches(p, q) {
   if (!q) return false;
   const cat = getCat(p.mainCategoryId);
@@ -107,9 +109,6 @@ $("searchInput").addEventListener("input", function() {
 });
 $("searchClear").addEventListener("click", () => { $("searchInput").value = ""; $("searchClear").classList.add("hidden"); searchQuery = ""; renderMainCats(); renderSubCats(); renderProducts(); $("searchInput").focus(); });
 
-/* ════════════════════════════════════
-   PRODUCT GRID
-════════════════════════════════════ */
 function renderProducts() {
   const title = $("activeTitle"); let list;
   if (searchQuery) {
@@ -153,9 +152,6 @@ function renderProducts() {
   });
 }
 
-/* ════════════════════════════════════
-   PRODUCT DETAIL PAGE
-════════════════════════════════════ */
 function openProductDetail(p) {
   lockScroll();
   currentDetailProduct = p; const price = finalPrice(p), inStock = p.inStock !== false, cat = getCat(p.mainCategoryId);
@@ -222,9 +218,6 @@ function closeProductDetail() {
 $("pdBackBtn").onclick = closeProductDetail;
 $("pdCartBtn").onclick = () => { renderCart(); $("cartOverlay").classList.remove("hidden"); lockScroll(); preventZoom(); };
 
-/* ════════════════════════════════════
-   HORIZONTAL SECTIONS (More From...)
-════════════════════════════════════ */
 function renderHorizSections(currentProduct) {
   const container = $("pdHorizSections"); container.innerHTML = "";
   if (currentProduct.subCategory) {
@@ -264,9 +257,6 @@ function buildHorizSection(title, list) {
 
 function syncDetailCartBadge() { const count = cart.reduce((s, i) => s + i.qty, 0); $("pdCartCount").textContent = count; $("pdCartCount").classList.toggle("hidden", count === 0); }
 
-/* ════════════════════════════════════
-   CART
-════════════════════════════════════ */
 function addToCart(p) {
   const found = cart.find(i => i.product.id === p.id);
   if (found) found.qty += 1; else cart.push({ product: p, qty: 1 });
@@ -295,347 +285,140 @@ $("cartClose").onclick = () => { $("cartOverlay").classList.add("hidden"); unloc
 $("cartOverlay").onclick = e => { if (e.target === $("cartOverlay")) { $("cartOverlay").classList.add("hidden"); unlockScroll(); } };
 $("clearCartBtn").onclick = clearCart;
 
-/* ════════════════════════════════════
-   CHECKOUT OVERLAY (100% ROCK SOLID LOGIC)
-════════════════════════════════════ */
 const UPI_ID = "kkfashion@nyes"; 
-const STORE_NAME = "KKFashion"; 
-
-// Only allow strictly 12 digits on UTR input
-if($("chkUtr")) {
-  $("chkUtr").oninput = function() {
-      this.value = this.value.replace(/[^0-9]/g, '').slice(0, 12);
-  };
-}
-
-// Copy UPI Logic
+if($("chkUtr")) { $("chkUtr").oninput = function() { this.value = this.value.replace(/[^0-9]/g, '').slice(0, 12); }; }
 if($("copyUpiBtn")) {
   $("copyUpiBtn").onclick = function() {
       navigator.clipboard.writeText(UPI_ID).then(() => {
           this.innerHTML = `${UPI_ID} <span style="font-size:12px; background:#4cc968; color:#fff; padding:3px 8px; border-radius:4px;">✅ Copied!</span>`;
-          setTimeout(() => { 
-              this.innerHTML = `${UPI_ID} <span style="font-size:12px; background:var(--primary); color:#fff; padding:3px 8px; border-radius:4px;">📋 Copy</span>`; 
-          }, 2000);
+          setTimeout(() => { this.innerHTML = `${UPI_ID} <span style="font-size:12px; background:var(--primary); color:#fff; padding:3px 8px; border-radius:4px;">📋 Copy</span>`; }, 2000);
       }).catch(err => alert("Copy nahi ho paya, manually type karein."));
   };
 }
 
+// UPDATED: CHECK LOGIN BEFORE BUY NOW
 function directBuyCheckout(p) {
+  if (!currentUser) {
+     $("authOverlay").classList.remove("hidden"); // Login box kholo
+     return;
+  }
   preventZoom();
   cart = [{ product: p, qty: 1 }]; save("knk_cart", cart); renderCartCount();
   $("prodDetail").classList.add("hidden"); $("prodDetail").classList.remove("closing"); currentDetailProduct = null;
   openCheckout();
 }
 
-$("checkoutBtn").onclick = () => { if (!cart.length) return; $("cartOverlay").classList.add("hidden"); openCheckout(); };
+// UPDATED: CHECK LOGIN BEFORE CART CHECKOUT
+$("checkoutBtn").onclick = () => { 
+  if (!cart.length) return; 
+  if (!currentUser) {
+     $("authOverlay").classList.remove("hidden"); // Login box kholo
+     return;
+  }
+  $("cartOverlay").classList.add("hidden"); 
+  openCheckout(); 
+};
 
 function resetCheckoutUI() {
-  $("checkoutStep1").classList.remove("hidden");
-  $("checkoutStep2").classList.add("hidden");
-  if($("checkoutStep3")) $("checkoutStep3").classList.add("hidden");
-  
-  // Footer
-  $("checkoutFooter").classList.remove("hidden");
-  $("chkFooterTotalRow").classList.remove("hidden");
-  $("step1NextBtn").classList.remove("hidden");
-  $("step2PayBtn").classList.add("hidden");
-  $("confirmOrderBtn").classList.add("hidden");
-
-  // Step 2 inner areas
-  if($("paymentOptionsWrap")) $("paymentOptionsWrap").classList.remove("hidden");
-  if($("qrScanSection")) $("qrScanSection").classList.add("hidden");
-  if($("chkUtr")) $("chkUtr").value = "";
-  
-  // Clear timer if running
+  $("checkoutStep1").classList.remove("hidden"); $("checkoutStep2").classList.add("hidden"); if($("checkoutStep3")) $("checkoutStep3").classList.add("hidden");
+  $("checkoutFooter").classList.remove("hidden"); $("chkFooterTotalRow").classList.remove("hidden"); $("step1NextBtn").classList.remove("hidden"); $("step2PayBtn").classList.add("hidden"); $("confirmOrderBtn").classList.add("hidden");
+  if($("paymentOptionsWrap")) $("paymentOptionsWrap").classList.remove("hidden"); if($("qrScanSection")) $("qrScanSection").classList.add("hidden"); if($("chkUtr")) $("chkUtr").value = "";
   if(window.paymentInterval) clearInterval(window.paymentInterval);
-  
-  $("step1Indicator").className = "step-item active"; $("step1Circle").innerHTML = "1";
-  $("line1").className = "step-line"; 
-  $("step2Indicator").className = "step-item"; $("step2Circle").innerHTML = "2";
-  $("line2").className = "step-line"; 
-  $("step3Indicator").className = "step-item"; $("step3Circle").innerHTML = "3";
+  $("step1Indicator").className = "step-item active"; $("step1Circle").innerHTML = "1"; $("line1").className = "step-line"; $("step2Indicator").className = "step-item"; $("step2Circle").innerHTML = "2"; $("line2").className = "step-line"; $("step3Indicator").className = "step-item"; $("step3Circle").innerHTML = "3";
 }
 
 function openCheckout() {
-  lockScroll(); 
-  resetCheckoutUI();
+  lockScroll(); resetCheckoutUI();
   const total = cart.reduce((s, i) => s + finalPrice(i.product) * i.qty, 0);
   $("chkTotalAmt").textContent = "₹" + total;
   $("checkoutOverlay").classList.remove("hidden");
 }
 
-/* SMART BACK BUTTON LOGIC (FOR TOP HEADER ARROW ONLY) */
 $("closeCheckout").onclick = () => { 
-  // 1. Agar QR code dikh raha hai (Step 2 se peeche jana)
   if (!$("qrScanSection").classList.contains("hidden")) {
-      $("qrScanSection").classList.add("hidden");
-      $("paymentOptionsWrap").classList.remove("hidden");
-      
-      $("confirmOrderBtn").classList.add("hidden");
-      $("step2PayBtn").classList.remove("hidden");
-      
+      $("qrScanSection").classList.add("hidden"); $("paymentOptionsWrap").classList.remove("hidden"); $("confirmOrderBtn").classList.add("hidden"); $("step2PayBtn").classList.remove("hidden");
       if(window.paymentInterval) clearInterval(window.paymentInterval);
   }
-  // 2. Agar Payment Options dikh rahe hain (Step 2 se Step 1 par wapas jao)
   else if (!$("checkoutStep2").classList.contains("hidden")) {
-      $("checkoutStep2").classList.add("hidden");
-      $("checkoutStep1").classList.remove("hidden");
-      
-      $("step2PayBtn").classList.add("hidden");
-      $("step1NextBtn").classList.remove("hidden");
-      $("chkFooterTotalRow").classList.remove("hidden");
-
-      // Stepper UI backward reset
-      $("step2Indicator").classList.remove("active");
-      $("step1Indicator").classList.remove("completed");
-      $("step1Indicator").classList.add("active");
-      $("line1").classList.remove("completed");
-      $("step1Circle").innerHTML = "1";
-  }
-  // 3. Agar Step 1 par hi hain, toh poora Checkout Popup band kar do
-  else {
-      $("checkoutOverlay").classList.add("hidden"); 
-      unlockScroll(); 
-  }
+      $("checkoutStep2").classList.add("hidden"); $("checkoutStep1").classList.remove("hidden"); $("step2PayBtn").classList.add("hidden"); $("step1NextBtn").classList.remove("hidden"); $("chkFooterTotalRow").classList.remove("hidden");
+      $("step2Indicator").classList.remove("active"); $("step1Indicator").classList.remove("completed"); $("step1Indicator").classList.add("active"); $("line1").classList.remove("completed"); $("step1Circle").innerHTML = "1";
+  } else { $("checkoutOverlay").classList.add("hidden"); unlockScroll(); }
 };
 
-// STEP 1 -> STEP 2
 $("step1NextBtn").onclick = () => {
   const name = $("chkName").value.trim(), mobile = $("chkMobile").value.trim(), address = $("chkAddress").value.trim(), state = $("chkState").value.trim(), pincode = $("chkPincode").value.trim();
   if(!name || !mobile || !address || !state || !pincode) { alert("Kripya sabhi zaroori jankari bharein!"); return; }
   if(mobile.length < 10 || isNaN(mobile)) { alert("Mobile number galat hai!"); return; }
-
-  // Transition to Step 2
-  $("checkoutStep1").classList.add("hidden");
-  $("checkoutStep2").classList.remove("hidden");
-  
-  $("step1NextBtn").classList.add("hidden");
-  $("step2PayBtn").classList.remove("hidden");
-  $("chkFooterTotalRow").classList.add("hidden");
-
-  // Stepper UI update
-  $("step1Indicator").classList.remove("active"); $("step1Indicator").classList.add("completed");
-  $("step1Circle").innerHTML = "✔"; $("line1").classList.add("completed");
-  $("step2Indicator").classList.add("active");
-
+  $("checkoutStep1").classList.add("hidden"); $("checkoutStep2").classList.remove("hidden"); $("step1NextBtn").classList.add("hidden"); $("step2PayBtn").classList.remove("hidden"); $("chkFooterTotalRow").classList.add("hidden");
+  $("step1Indicator").classList.remove("active"); $("step1Indicator").classList.add("completed"); $("step1Circle").innerHTML = "✔"; $("line1").classList.add("completed"); $("step2Indicator").classList.add("active");
   renderStep2();
 };
 
 function renderStep2() {
-  if (!cart.length) return;
-  const item = cart[0]; 
-  const p = item.product;
-  const mainImg = (Array.isArray(p.image) && p.image.length > 0) ? p.image[0] : (typeof p.image === 'string' ? p.image : "placeholder.jpg");
-  
-  $("chkStep2Img").src = mainImg;
-  $("chkStep2Qty").value = item.qty > 7 ? 7 : item.qty; 
-  
-  updateStep2Summary();
-
-  $("chkStep2Qty").onchange = (e) => {
-    item.qty = parseInt(e.target.value);
-    save("knk_cart", cart); renderCartCount();
-    updateStep2Summary();
-  };
+  if (!cart.length) return; const item = cart[0]; const p = item.product; const mainImg = (Array.isArray(p.image) && p.image.length > 0) ? p.image[0] : (typeof p.image === 'string' ? p.image : "placeholder.jpg");
+  $("chkStep2Img").src = mainImg; $("chkStep2Qty").value = item.qty > 7 ? 7 : item.qty; updateStep2Summary();
+  $("chkStep2Qty").onchange = (e) => { item.qty = parseInt(e.target.value); save("knk_cart", cart); renderCartCount(); updateStep2Summary(); };
 }
 
 function updateStep2Summary() {
-  let actualTotal = 0;
-  let finalTotal = 0;
-  cart.forEach(i => {
-     actualTotal += i.product.price * i.qty;
-     finalTotal += finalPrice(i.product) * i.qty;
-  });
-  
-  $("billActual").textContent = "₹" + actualTotal;
-  $("billFinal").textContent = "₹" + finalTotal;
-  
-  if (actualTotal > 0) {
-     const discPercent = Math.round(((actualTotal - finalTotal) / actualTotal) * 100);
-     $("billDiscount").textContent = discPercent + "% off";
-  }
-
-  const advance = Math.round(finalTotal * 0.25);
-  const balance = finalTotal - advance;
-  $("codAdvanceAmt").textContent = "₹" + advance;
-  $("codBalanceAmt").textContent = "₹" + balance;
+  let actualTotal = 0, finalTotal = 0;
+  cart.forEach(i => { actualTotal += i.product.price * i.qty; finalTotal += finalPrice(i.product) * i.qty; });
+  $("billActual").textContent = "₹" + actualTotal; $("billFinal").textContent = "₹" + finalTotal;
+  if (actualTotal > 0) { const discPercent = Math.round(((actualTotal - finalTotal) / actualTotal) * 100); $("billDiscount").textContent = discPercent + "% off"; }
+  const advance = Math.round(finalTotal * 0.25), balance = finalTotal - advance;
+  $("codAdvanceAmt").textContent = "₹" + advance; $("codBalanceAmt").textContent = "₹" + balance;
 }
 
-// Payment Option Toggle
 document.querySelectorAll('input[name="payMethod"]').forEach(radio => {
   radio.addEventListener("change", (e) => {
-    // Agar option badle toh wapas default step 2 par le aao
-    $("qrScanSection").classList.add("hidden");
-    $("paymentOptionsWrap").classList.remove("hidden");
-    $("confirmOrderBtn").classList.add("hidden");
-    $("step2PayBtn").classList.remove("hidden");
+    $("qrScanSection").classList.add("hidden"); $("paymentOptionsWrap").classList.remove("hidden"); $("confirmOrderBtn").classList.add("hidden"); $("step2PayBtn").classList.remove("hidden");
     if(window.paymentInterval) clearInterval(window.paymentInterval);
-
-    if (e.target.value === "COD") {
-       $("codWarningBox").classList.remove("hidden");
-       $("step2PayBtn").textContent = "Pay 25% Advance";
-    } else {
-       $("codWarningBox").classList.add("hidden");
-       $("step2PayBtn").textContent = "Pay 100% Now";
-    }
+    if (e.target.value === "COD") { $("codWarningBox").classList.remove("hidden"); $("step2PayBtn").textContent = "Pay 25% Advance"; } else { $("codWarningBox").classList.add("hidden"); $("step2PayBtn").textContent = "Pay 100% Now"; }
   });
 });
 
-// PAY BUTTON CLICK -> HIDE PAY BUTTON, SHOW QR + UTR + CONFIRM BUTTON
 $("step2PayBtn").onclick = () => {
-  const payMethod = $("payPrepaid").checked ? "Prepaid" : "COD";
-  let finalTotal = 0;
-  cart.forEach(i => finalTotal += finalPrice(i.product) * i.qty);
+  const payMethod = $("payPrepaid").checked ? "Prepaid" : "COD"; let finalTotal = 0; cart.forEach(i => finalTotal += finalPrice(i.product) * i.qty);
   let amountPaid = payMethod === "Prepaid" ? finalTotal : Math.round(finalTotal * 0.25);
-
-  // Set the price in QR section
-  $("qrAmountDisplay").textContent = "₹" + amountPaid;
-
-  // Toggle Visibility securely
-  $("paymentOptionsWrap").classList.add("hidden");
-  $("qrScanSection").classList.remove("hidden");
-
-  // Switch Footer Buttons
-  $("step2PayBtn").classList.add("hidden");
-  $("confirmOrderBtn").classList.remove("hidden");
-
-  // Scroll to top of Step 2 area so QR is fully visible
-  $("checkoutStep2").scrollTop = 0;
-
-  // Timer Logic
-  let timeLeft = 300; 
-  const timerDisplay = document.getElementById("paymentTimer");
-  
+  $("qrAmountDisplay").textContent = "₹" + amountPaid; $("paymentOptionsWrap").classList.add("hidden"); $("qrScanSection").classList.remove("hidden"); $("step2PayBtn").classList.add("hidden"); $("confirmOrderBtn").classList.remove("hidden"); $("checkoutStep2").scrollTop = 0;
+  let timeLeft = 300; const timerDisplay = document.getElementById("paymentTimer");
   if(window.paymentInterval) clearInterval(window.paymentInterval);
-  window.paymentInterval = setInterval(() => {
-      timeLeft--;
-      let minutes = Math.floor(timeLeft / 60);
-      let seconds = timeLeft % 60;
-      timerDisplay.innerText = "Time left: 0" + minutes + ":" + (seconds < 10 ? "0" : "") + seconds;
-
-      if (timeLeft <= 0) {
-          clearInterval(window.paymentInterval);
-          timerDisplay.innerText = "Time expired! Kripya page refresh karein.";
-          timerDisplay.style.color = "red";
-      }
-  }, 1000);
+  window.paymentInterval = setInterval(() => { timeLeft--; let minutes = Math.floor(timeLeft / 60); let seconds = timeLeft % 60; timerDisplay.innerText = "Time left: 0" + minutes + ":" + (seconds < 10 ? "0" : "") + seconds; if (timeLeft <= 0) { clearInterval(window.paymentInterval); timerDisplay.innerText = "Time expired! Kripya page refresh karein."; timerDisplay.style.color = "red"; } }, 1000);
 };
 
-// FINAL CONFIRM UTR & SAVE TO FIREBASE
 $("confirmOrderBtn").onclick = () => {
   let utrValue = $("chkUtr").value.trim();
-  
-  // STRICT 12 DIGIT CHECK
-  if (utrValue.length !== 12 || !/^\d+$/.test(utrValue)) {
-    alert("Galat UTR! Kripya exactly 12-digit ka sahi numeric UTR / Reference Number daalein.");
-    return;
-  }
-
-  const payMethod = $("payPrepaid").checked ? "Prepaid" : "COD";
-  let finalTotal = 0;
-  cart.forEach(i => finalTotal += finalPrice(i.product) * i.qty);
-  
-  let amountPaid = 0;
-  let balanceDue = 0;
-  
-  if (payMethod === "Prepaid") {
-    amountPaid = finalTotal;
-    balanceDue = 0;
-  } else {
-    amountPaid = Math.round(finalTotal * 0.25);
-    balanceDue = finalTotal - amountPaid;
-  }
-
-  // Prepare Data for Firebase
-  const orderData = { 
-    name: $("chkName").value.trim(), 
-    mobile: $("chkMobile").value.trim(), 
-    address: $("chkAddress").value.trim(), 
-    state: $("chkState").value.trim(), 
-    pincode: $("chkPincode").value.trim(), 
-    landmark: $("chkLandmark").value.trim(), 
-    items: cart, 
-    totalAmount: finalTotal,
-    paymentMethod: payMethod,
-    amountPaid: amountPaid,
-    balanceDue: balanceDue,
-    utrNumber: utrValue,
-    status: "Recent" 
-  };
-
+  if (utrValue.length !== 12 || !/^\d+$/.test(utrValue)) { alert("Galat UTR! Kripya exactly 12-digit ka sahi numeric UTR / Reference Number daalein."); return; }
+  const payMethod = $("payPrepaid").checked ? "Prepaid" : "COD"; let finalTotal = 0; cart.forEach(i => finalTotal += finalPrice(i.product) * i.qty);
+  let amountPaid = 0, balanceDue = 0;
+  if (payMethod === "Prepaid") { amountPaid = finalTotal; balanceDue = 0; } else { amountPaid = Math.round(finalTotal * 0.25); balanceDue = finalTotal - amountPaid; }
+  const orderData = { name: $("chkName").value.trim(), mobile: $("chkMobile").value.trim(), address: $("chkAddress").value.trim(), state: $("chkState").value.trim(), pincode: $("chkPincode").value.trim(), landmark: $("chkLandmark").value.trim(), items: cart, totalAmount: finalTotal, paymentMethod: payMethod, amountPaid: amountPaid, balanceDue: balanceDue, utrNumber: utrValue, status: "Recent", userId: currentUser ? currentUser.uid : "guest" };
   const btn = $("confirmOrderBtn"); btn.textContent = "Placing Order...";
-  if(window.paymentInterval) clearInterval(window.paymentInterval); // Stop timer on success
-  
-  // Save to Firebase
-  if (window.saveOrderToFirebase) {
-    window.saveOrderToFirebase(orderData).then(success => {
-      if (success) {
-        showStep3Success(payMethod, amountPaid, balanceDue);
-        if (window.fetchOrdersFromFirebase) window.fetchOrdersFromFirebase();
-      } else {
-        alert("Server error. Please try again.");
-        btn.textContent = "Verify Payment & Place Order";
-      }
-    });
-  } else {
-      // Fallback
-      showStep3Success(payMethod, amountPaid, balanceDue);
-  }
+  if(window.paymentInterval) clearInterval(window.paymentInterval); 
+  if (window.saveOrderToFirebase) { window.saveOrderToFirebase(orderData).then(success => { if (success) { showStep3Success(payMethod, amountPaid, balanceDue); if (window.fetchOrdersFromFirebase) window.fetchOrdersFromFirebase(); } else { alert("Server error. Please try again."); btn.textContent = "Verify Payment & Place Order"; } }); } else { showStep3Success(payMethod, amountPaid, balanceDue); }
 };
 
-// STEP 3 SUCCESS SCREEN
 function showStep3Success(payMethod, paid, due) {
-  $("checkoutStep2").classList.add("hidden");
-  $("checkoutStep3").classList.remove("hidden");
-  $("checkoutFooter").classList.add("hidden"); 
-  
-  $("step2Indicator").classList.remove("active"); $("step2Indicator").classList.add("completed");
-  $("step2Circle").innerHTML = "✔"; $("line2").classList.add("completed");
-  $("step3Indicator").classList.add("active");
-
+  $("checkoutStep2").classList.add("hidden"); $("checkoutStep3").classList.remove("hidden"); $("checkoutFooter").classList.add("hidden"); 
+  $("step2Indicator").classList.remove("active"); $("step2Indicator").classList.add("completed"); $("step2Circle").innerHTML = "✔"; $("line2").classList.add("completed"); $("step3Indicator").classList.add("active");
   let sumHtml = `<strong style="font-size:14px; color:var(--primary);">Payment Mode: ${payMethod}</strong><br><br>`;
-  if(payMethod === "COD") {
-    sumHtml += `<strong>Safety Deposit Paid (25%):</strong> ₹${paid}<br>`;
-    sumHtml += `<strong style="color:var(--destructive)">Balance Cash on Delivery (75%):</strong> ₹${due}`;
-  } else {
-    sumHtml += `<strong>Total Paid Online:</strong> ₹${paid}<br>`;
-    sumHtml += `<strong style="color:#4cc968">No pending dues!</strong>`;
-  }
-  $("successOrderSummary").innerHTML = sumHtml;
-  clearCart();
+  if(payMethod === "COD") { sumHtml += `<strong>Safety Deposit Paid (25%):</strong> ₹${paid}<br><strong style="color:var(--destructive)">Balance Cash on Delivery (75%):</strong> ₹${due}`; } else { sumHtml += `<strong>Total Paid Online:</strong> ₹${paid}<br><strong style="color:#4cc968">No pending dues!</strong>`; }
+  $("successOrderSummary").innerHTML = sumHtml; clearCart();
 }
 
-$("successCloseBtn").onclick = () => {
-  $("checkoutOverlay").classList.add("hidden");
-  unlockScroll();
-  resetCheckoutUI();
-};
+$("successCloseBtn").onclick = () => { $("checkoutOverlay").classList.add("hidden"); unlockScroll(); resetCheckoutUI(); };
 
-
-/* ════════════════════════════════════
-   ADMIN PIN & PANEL LOGIC
-════════════════════════════════════ */
 let tapCount = 0, tapTimer = null;
-$("logoBtn").onclick = () => {
-  tapCount++; if (tapTimer) clearTimeout(tapTimer);
-  if (tapCount >= 20) { tapCount = 0; openPin(); return; }
-  tapTimer = setTimeout(() => { tapCount = 0; }, 3000);
-};
-
+$("logoBtn").onclick = () => { tapCount++; if (tapTimer) clearTimeout(tapTimer); if (tapCount >= 20) { tapCount = 0; openPin(); return; } tapTimer = setTimeout(() => { tapCount = 0; }, 3000); };
 function openPin() { $("pinInput").value = ""; $("pinError").classList.add("hidden"); $("adminPin").classList.remove("hidden"); setTimeout(() => $("pinInput").focus(), 100); }
 $("pinClose").onclick = () => $("adminPin").classList.add("hidden");
 $("pinUnlock").onclick = tryUnlock;
 $("pinInput").onkeydown = e => { if (e.key === "Enter") tryUnlock(); };
-
-function tryUnlock() {
-  if ($("pinInput").value === ADMIN_PIN) { $("adminPin").classList.add("hidden"); openAdmin(); } else { $("pinError").classList.remove("hidden"); $("pinInput").style.borderColor = "#e05555"; setTimeout(() => { $("pinInput").style.borderColor = ""; }, 800); }
-}
-
+function tryUnlock() { if ($("pinInput").value === ADMIN_PIN) { $("adminPin").classList.add("hidden"); openAdmin(); } else { $("pinError").classList.remove("hidden"); $("pinInput").style.borderColor = "#e05555"; setTimeout(() => { $("pinInput").style.borderColor = ""; }, 800); } }
 function openAdmin() { lockScroll(); renderAdmin(); $("adminPanel").classList.remove("hidden"); }
 $("adminClose").onclick = () => { $("adminPanel").classList.add("hidden"); unlockScroll(); };
 
 function saveCategories() { if (window.saveCategoriesToFirebase) window.saveCategoriesToFirebase(mainCategories); }
-
 function renderCatMgmt() {
   const list = $("catMgmtList"); list.innerHTML = "";
   mainCategories.forEach(cat => {
@@ -661,66 +444,25 @@ $("addCatBtn").onclick = () => { const inp = $("newCatName"); const v = inp.valu
 function syncAddProductDropdowns() { const pMainCat = $("pMainCat"); pMainCat.innerHTML = ""; mainCategories.forEach(cat => { const o = document.createElement("option"); o.value = cat.id; o.textContent = cat.name; pMainCat.appendChild(o); }); onMainCatChange(); }
 window.onMainCatChange = function() { const cat = getCat($("pMainCat").value); const group = $("subCatGroup"); const pSub = $("pSubCat"); if (!cat || !cat.subCategories || cat.subCategories.length === 0) { group.style.display = "none"; return; } group.style.display = ""; pSub.innerHTML = ""; cat.subCategories.forEach(s => { const o = document.createElement("option"); o.value = s; o.textContent = s; pSub.appendChild(o); }); };
 $("pInStock").addEventListener("change", function() { const lbl = $("pStockLabel"); lbl.textContent = this.checked ? "In Stock" : "Out of Stock"; lbl.className = "stock-label " + (this.checked ? "in" : "out"); });
-
 function syncFilterDropdown() { const sel = $("adminFilterCat"); sel.innerHTML = '<option value="ALL">All Categories</option>'; mainCategories.forEach(cat => { const o = document.createElement("option"); o.value = cat.id; o.textContent = cat.name; sel.appendChild(o); }); }
 
-// ═════ ADMIN ORDER MANAGEMENT ═════
-let liveOrders = [];
-let currentOrderTab = "Recent";
-
+let liveOrders = []; let currentOrderTab = "Recent";
 window.renderAdminOrders = function(orders) { liveOrders = orders; renderOrdersByTab(); };
-
 function renderOrdersByTab() {
-  const list = $("adminOrdersList");
-  if (!list) return;
-
-  let filtered = liveOrders.filter(o => (o.status || "Recent") === currentOrderTab);
-  if (filtered.length === 0) { list.innerHTML = `<p class='empty'>Koi order nahi hai is tab mein.</p>`; return; }
+  const list = $("adminOrdersList"); if (!list) return; let filtered = liveOrders.filter(o => (o.status || "Recent") === currentOrderTab); if (filtered.length === 0) { list.innerHTML = `<p class='empty'>Koi order nahi hai is tab mein.</p>`; return; }
   list.innerHTML = "";
-  
   filtered.forEach(o => {
-    const itemsHtml = o.items.map(i => {
-      const mainImg = (Array.isArray(i.product.image) && i.product.image.length > 0) ? i.product.image[0] : (typeof i.product.image === 'string' ? i.product.image : "placeholder.jpg");
-      return `<div class="order-item-row"><img src="${mainImg}" class="order-item-img" alt="${i.product.name}" /><span>${i.product.name} <strong style="color:var(--primary)">(x${i.qty})</strong></span></div>`;
-    }).join("");
-    
+    const itemsHtml = o.items.map(i => { const mainImg = (Array.isArray(i.product.image) && i.product.image.length > 0) ? i.product.image[0] : (typeof i.product.image === 'string' ? i.product.image : "placeholder.jpg"); return `<div class="order-item-row"><img src="${mainImg}" class="order-item-img" alt="${i.product.name}" /><span>${i.product.name} <strong style="color:var(--primary)">(x${i.qty})</strong></span></div>`; }).join("");
     const dateStr = o.timestamp && o.timestamp.seconds ? new Date(o.timestamp.seconds * 1000).toLocaleString() : "Just Now";
-    
-    // Pay Method Badge and UTR Display
-    const payBadge = o.paymentMethod === "COD" 
-       ? `<span style="background:var(--destructive); color:#fff; padding:3px 8px; border-radius:4px; font-size:10px; margin-left:8px;">C.O.D (Due: ₹${o.balanceDue})</span>` 
-       : `<span style="background:#4cc968; color:#fff; padding:3px 8px; border-radius:4px; font-size:10px; margin-left:8px; color:black; font-weight:bold;">PREPAID</span>`;
-    
+    const payBadge = o.paymentMethod === "COD" ? `<span style="background:var(--destructive); color:#fff; padding:3px 8px; border-radius:4px; font-size:10px; margin-left:8px;">C.O.D (Due: ₹${o.balanceDue})</span>` : `<span style="background:#4cc968; color:#fff; padding:3px 8px; border-radius:4px; font-size:10px; margin-left:8px; color:black; font-weight:bold;">PREPAID</span>`;
     const utrText = o.utrNumber ? `<div style="margin-top:4px; font-size:11px; color:var(--primary);">UTR/Ref: <strong>${o.utrNumber}</strong></div>` : "";
-
     const div = document.createElement("div"); div.className = "admin-order-card";
-    div.innerHTML = `
-      <div class="order-head">
-        <span class="order-id">ID: ${o.id ? o.id.substring(0,8) : 'NEW'}...</span>
-        <span class="order-total">₹${o.totalAmount}</span>
-      </div>
-      <div class="order-cust">
-        <strong>${o.name}</strong> (${o.mobile}) ${payBadge}<br>
-        ${o.address}, ${o.state} - ${o.pincode}<br>
-        ${utrText}
-        <small style="color:var(--muted)">${dateStr}</small>
-      </div>
-      <div class="order-items">${itemsHtml}</div>
-      <div class="order-actions">
-        <select class="field small-field status-select" data-id="${o.id}">
-          <option value="Recent" ${o.status === 'Recent' ? 'selected' : ''}>Recent</option>
-          <option value="Pending" ${o.status === 'Pending' ? 'selected' : ''}>Pending</option>
-          <option value="Completed" ${o.status === 'Completed' ? 'selected' : ''}>Completed</option>
-        </select>
-        <button class="trash del-order-btn" data-id="${o.id}">🗑️ Remove</button>
-      </div>`;
+    div.innerHTML = `<div class="order-head"><span class="order-id">ID: ${o.id ? o.id.substring(0,8) : 'NEW'}...</span><span class="order-total">₹${o.totalAmount}</span></div><div class="order-cust"><strong>${o.name}</strong> (${o.mobile}) ${payBadge}<br>${o.address}, ${o.state} - ${o.pincode}<br>${utrText}<small style="color:var(--muted)">${dateStr}</small></div><div class="order-items">${itemsHtml}</div><div class="order-actions"><select class="field small-field status-select" data-id="${o.id}"><option value="Recent" ${o.status === 'Recent' ? 'selected' : ''}>Recent</option><option value="Pending" ${o.status === 'Pending' ? 'selected' : ''}>Pending</option><option value="Completed" ${o.status === 'Completed' ? 'selected' : ''}>Completed</option></select><button class="trash del-order-btn" data-id="${o.id}">🗑️ Remove</button></div>`;
     list.appendChild(div);
   });
-
   document.querySelectorAll(".status-select").forEach(sel => { sel.addEventListener("change", async (e) => { const id = e.target.getAttribute("data-id"); const newStatus = e.target.value; const order = liveOrders.find(x => x.id === id); if(order) order.status = newStatus; renderOrdersByTab(); if (window.updateOrderStatusInFirebase) await window.updateOrderStatusInFirebase(id, newStatus); }); });
   document.querySelectorAll(".del-order-btn").forEach(btn => { btn.addEventListener("click", async (e) => { const id = e.currentTarget.getAttribute("data-id"); if(!confirm("Kya aap sach me is order ko delete karna chahte hain?")) return; liveOrders = liveOrders.filter(x => x.id !== id); renderOrdersByTab(); if (window.deleteOrderFromFirebase) await window.deleteOrderFromFirebase(id); }); });
 }
-
 document.querySelectorAll(".admin-tab").forEach(tab => { tab.addEventListener("click", (e) => { document.querySelectorAll(".admin-tab").forEach(t => t.classList.remove("active")); e.currentTarget.classList.add("active"); currentOrderTab = e.currentTarget.getAttribute("data-tab"); renderOrdersByTab(); }); });
 
 function renderAdminProducts() {
@@ -742,58 +484,56 @@ window.renderAdmin = function() {
 };
 
 function openEditModal(p) { 
-  editingProductId = p.id; 
-  $("editPName").textContent = p.name; 
-  let imgArray = Array.isArray(p.image) ? p.image : [p.image];
-  $("editPImage").value = imgArray.join(", "); 
-  $("editPPrice").value = p.price; 
-  $("editPDiscount").value = p.discount || 0; 
-  $("editPExtra").value = p.extra || 0; 
-  const inStock = p.inStock !== false; $("editInStock").checked = inStock; 
-  const lbl = $("editStockLabel"); lbl.textContent = inStock ? "In Stock" : "Out of Stock"; lbl.className = "stock-label " + (inStock ? "in" : "out"); 
-  $("editModal").classList.remove("hidden"); 
+  editingProductId = p.id; $("editPName").textContent = p.name; let imgArray = Array.isArray(p.image) ? p.image : [p.image]; $("editPImage").value = imgArray.join(", "); $("editPPrice").value = p.price; $("editPDiscount").value = p.discount || 0; $("editPExtra").value = p.extra || 0; 
+  const inStock = p.inStock !== false; $("editInStock").checked = inStock; const lbl = $("editStockLabel"); lbl.textContent = inStock ? "In Stock" : "Out of Stock"; lbl.className = "stock-label " + (inStock ? "in" : "out"); $("editModal").classList.remove("hidden"); 
 }
-
 $("editInStock").addEventListener("change", function() { const lbl = $("editStockLabel"); lbl.textContent = this.checked ? "In Stock" : "Out of Stock"; lbl.className = "stock-label " + (this.checked ? "in" : "out"); });
 $("editClose").onclick = () => { $("editModal").classList.add("hidden"); editingProductId = null; };
-
 $("saveEditBtn").onclick = () => {
-  if (!editingProductId) return; 
-  const newPrice = Number($("editPPrice").value), newDiscount = Number($("editPDiscount").value) || 0, newExtra = Number($("editPExtra").value) || 0, newInStock = $("editInStock").checked;
-  const rawImage = $("editPImage").value.trim();
-  const newImgArray = rawImage.split(",").map(s => s.trim()).filter(Boolean);
-  
+  if (!editingProductId) return; const newPrice = Number($("editPPrice").value), newDiscount = Number($("editPDiscount").value) || 0, newExtra = Number($("editPExtra").value) || 0, newInStock = $("editInStock").checked; const rawImage = $("editPImage").value.trim(); const newImgArray = rawImage.split(",").map(s => s.trim()).filter(Boolean);
   if (!newPrice || newPrice <= 0 || newImgArray.length === 0) { alert("Sahi Image aur Price daalein!"); return; } 
   const idx = products.findIndex(p => p.id === editingProductId);
-  
-  if (idx > -1) { 
-    products[idx] = { ...products[idx], image: newImgArray, price: newPrice, discount: newDiscount, extra: newExtra, inStock: newInStock }; 
-    renderProducts(); renderAdmin(); 
-  }
-  
-  if (window.updateProductInFirebase) { 
-    window.updateProductInFirebase(editingProductId, { imageUrl: newImgArray, price: newPrice, discount: newDiscount, extra: newExtra, inStock: newInStock }); 
-  }
-  
+  if (idx > -1) { products[idx] = { ...products[idx], image: newImgArray, price: newPrice, discount: newDiscount, extra: newExtra, inStock: newInStock }; renderProducts(); renderAdmin(); }
+  if (window.updateProductInFirebase) { window.updateProductInFirebase(editingProductId, { imageUrl: newImgArray, price: newPrice, discount: newDiscount, extra: newExtra, inStock: newInStock }); }
   $("editModal").classList.add("hidden"); editingProductId = null;
 };
 
-/* ════════════════════════════════════
-   FULLSCREEN VIEWER LOGIC
-════════════════════════════════════ */
-$("closeViewerBtn").onclick = () => { 
-  $("imageViewer").classList.add("hidden"); 
-  preventZoom(); 
-};
-$("imageViewer").onclick = (e) => { 
-  if (e.target === $("imageViewer") || e.target === $("fullImage")) { 
-    $("imageViewer").classList.add("hidden"); 
-    preventZoom(); 
-  } 
-};
+$("closeViewerBtn").onclick = () => { $("imageViewer").classList.add("hidden"); preventZoom(); };
+$("imageViewer").onclick = (e) => { if (e.target === $("imageViewer") || e.target === $("fullImage")) { $("imageViewer").classList.add("hidden"); preventZoom(); } };
+
+preventZoom(); renderCartCount();
 
 /* ════════════════════════════════════
-   INIT
+   GOOGLE AUTH LOGIC (NEW)
 ════════════════════════════════════ */
-preventZoom(); 
-renderCartCount();
+
+if($("authBtn")) {
+  $("authBtn").onclick = () => {
+    if (currentUser) {
+      if(confirm(`Hi ${currentUser.displayName}!\nLogout karna chahte ho?`)) {
+        if(window.signOut) window.signOut(window.firebaseAuth);
+      }
+    } else {
+      $("authOverlay").classList.remove("hidden");
+    }
+  };
+}
+
+if($("authClose")) {
+  $("authClose").onclick = () => $("authOverlay").classList.add("hidden");
+}
+
+if($("googleSignInBtn")) {
+  $("googleSignInBtn").onclick = async () => {
+    const btn = $("googleSignInBtn");
+    btn.textContent = "Wait...";
+    try {
+      await window.signInWithPopup(window.firebaseAuth, window.firebaseProvider);
+      $("authOverlay").classList.add("hidden");
+    } catch(error) {
+      console.error("Login failed:", error);
+      alert("Login nahi ho paya. Error: " + error.message);
+    }
+    btn.innerHTML = `<img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18" alt="Google"> Continue with Google`;
+  };
+}
