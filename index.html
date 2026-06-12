@@ -20,21 +20,19 @@
 </head>
 <body>
 
-  <!-- STRICT LOGIN SCREEN (Appears FIRST) -->
-  <div id="loginScreen" class="login-screen">
+  <div id="loginScreen" class="login-screen hidden">
     <div class="login-box">
       <div class="brand-mark" style="font-size: 42px; margin-bottom: 5px; display: inline-block;">K_K</div>
       <div class="brand-name" style="font-size: 16px; margin-bottom: 25px; color: var(--fg); letter-spacing: 0.1em;">FASHION</div>
       <h2 style="font-family: var(--font-display); font-size: 26px; color: var(--primary); margin-bottom: 8px;">Welcome</h2>
       <p style="color: var(--muted); font-size: 13px; margin-bottom: 30px;">Please login with Google to enter the store.</p>
       <button id="mainGoogleLoginBtn" class="google-btn">
-        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20" alt="Google"> Continue with Google
+        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20" alt="Google" style="margin-right: 8px;"> Continue with Google
       </button>
     </div>
   </div>
 
-  <!-- SPLASH SCREEN (Hidden initially, opens AFTER login) -->
-  <div id="splash" class="splash hidden">
+  <div id="splash" class="splash">
     <div class="splash-glow"></div>
     <div class="splash-oval">
       <div class="splash-brand">K_K</div>
@@ -44,7 +42,6 @@
     <p class="splash-tagline">Premium Quality</p>
   </div>
 
-  <!-- MAIN APP (Hidden initially) -->
   <div id="app" class="app hidden">
     <header class="header">
       <button id="logoBtn" class="logo-btn" aria-label="Store logo">
@@ -52,7 +49,6 @@
         <span class="brand-name">Fashion</span>
       </button>
 
-      <!-- Profile/Logout Button -->
       <button id="authBtn" class="icon-btn" aria-label="User Profile" style="margin-left: auto; margin-right: 10px;">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
       </button>
@@ -446,8 +442,8 @@
     import { getStorage, ref, deleteObject } 
       from "https://www.gstatic.com/firebasejs/12.14.0/firebase-storage.js";
     
-    // FIREBASE AUTH IMPORTS
-    import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } 
+    // REDIRECT LOGIN IMPORTS (NO POPUP)
+    import { getAuth, signInWithRedirect, GoogleAuthProvider, onAuthStateChanged, signOut } 
       from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
 
     const firebaseConfig = {
@@ -465,44 +461,32 @@
     const db = getFirestore(fbApp);
     const storage = getStorage(fbApp);
 
-    // --- AUTHENTICATION & LOGIN/SPLASH SEQUENCE ---
+    // AUTH SETUP
     const auth = getAuth(fbApp);
     const provider = new GoogleAuthProvider();
-    
-    // Export globally for app.js
-    window.firebaseAuth = auth;
-    window.signOut = signOut;
-    window.currentUser = null;
+    window.logoutUser = () => signOut(auth);
 
-    const splash = document.getElementById("splash");
     const loginScreen = document.getElementById("loginScreen");
-    const app = document.getElementById("app");
-    
-    let isFirstLoad = true;
+    const appContainer = document.getElementById("app");
+    const splash = document.getElementById("splash");
 
-    // Track user state
+    // AUTH STATE LISTENER
     onAuthStateChanged(auth, (user) => {
-      window.currentUser = user;
       if (user) {
-        // Logged In -> Hide Login Screen
+        // LOGGED IN
         loginScreen.classList.add("hidden");
         
-        // Update header profile icon & checkout name
+        // Update header icon
         const authBtn = document.getElementById("authBtn");
         if(authBtn) authBtn.innerHTML = `<img src="${user.photoURL}" style="width:26px; height:26px; border-radius:50%; border:1px solid var(--primary); object-fit:cover;">`;
         const chkName = document.getElementById("chkName");
         if(chkName) chkName.value = user.displayName || "";
 
-        // Sequence: Play Splash -> Then Show App
-        if(isFirstLoad) {
-           isFirstLoad = false;
-           playSplash();
-        } else {
-           playSplash();
-        }
+        // If splash is running, it will automatically transition to app via app.js
+        // If it's already gone, just ensure app is visible
       } else {
-        // Not Logged In -> Show Login Screen, Hide App
-        app.classList.add("hidden");
+        // NOT LOGGED IN - Block everything, show login screen
+        appContainer.classList.add("hidden");
         splash.classList.add("hidden");
         loginScreen.classList.remove("hidden");
         
@@ -511,45 +495,28 @@
       }
     });
 
-    function playSplash() {
-      splash.classList.remove("hidden");
-      app.classList.add("hidden");
-      splash.style.opacity = "1";
-      
-      // 2.5 seconds wait for logo animation
-      setTimeout(() => {
-        splash.style.transition = "opacity 0.5s ease"; 
-        splash.style.opacity = "0";
-        setTimeout(() => { 
-          splash.classList.add("hidden"); 
-          app.classList.remove("hidden"); 
-        }, 500);
-      }, 2500);
-    }
-
-    // THIS PREVENTS POPUP BLOCKER! Button Click is handled right here.
+    // REDIRECT BUTTON CLICK - 100% works on Mobile
     const googleBtn = document.getElementById("mainGoogleLoginBtn");
     if(googleBtn) {
-      googleBtn.addEventListener("click", async () => {
-        const originalText = googleBtn.innerHTML;
+      googleBtn.addEventListener("click", () => {
         googleBtn.innerHTML = "Opening Google...";
-        try {
-          await signInWithPopup(auth, provider);
-          // onAuthStateChanged will handle the rest!
-        } catch(error) {
-          console.error("Login failed:", error);
-          alert("Login error: " + error.message);
-          googleBtn.innerHTML = originalText;
-        }
+        signInWithRedirect(auth, provider);
       });
     }
 
-    // --- STANDARD APP DATA FETCHING ---
     async function fetchSettings() {
       try {
         const snap = await getDoc(doc(db, "settings", "storeData"));
         let cats;
-        if (snap.exists() && snap.data().mainCategories) { cats = snap.data().mainCategories; } else { cats = [ { id: "cat_genz",  name: "GEN-Z PREMIUM", subCategories: ["PUMA COMBO","PREMIUM COMBO"] }, { id: "cat_other", name: "OTHER", subCategories: [] } ]; await setDoc(doc(db, "settings", "storeData"), { mainCategories: cats }, { merge: true }); }
+        if (snap.exists() && snap.data().mainCategories) {
+          cats = snap.data().mainCategories;
+        } else {
+          cats = [
+            { id: "cat_genz",  name: "GEN-Z PREMIUM", subCategories: ["PUMA COMBO","PREMIUM COMBO"] },
+            { id: "cat_other", name: "OTHER",          subCategories: [] }
+          ];
+          await setDoc(doc(db, "settings", "storeData"), { mainCategories: cats }, { merge: true });
+        }
         if (window.updateCategoriesFromFirebase) window.updateCategoriesFromFirebase(cats);
       } catch(e) { console.error(e); }
     }
@@ -558,41 +525,112 @@
       try {
         const snap = await getDocs(collection(db, "products"));
         const list = [];
-        snap.forEach(d => { const data = d.data(); let imgData = []; if(Array.isArray(data.imageUrl)) { imgData = data.imageUrl; } else if(data.imageUrl) { imgData = [data.imageUrl]; } list.push({ id: d.id, name: data.name, image: imgData, price: data.price, discount: data.discount || 0, extra: data.extra || 0, mainCategoryId: data.mainCategoryId || (data.mainCategory === "OTHER" ? "cat_other" : "cat_genz"), subCategory: data.subCategory || data.category || "", inStock: data.inStock !== false }); });
+        snap.forEach(d => {
+          const data = d.data();
+          let imgData = [];
+          if(Array.isArray(data.imageUrl)) { imgData = data.imageUrl; } 
+          else if(data.imageUrl) { imgData = [data.imageUrl]; }
+
+          list.push({
+            id: d.id,
+            name: data.name,
+            image: imgData,
+            price: data.price,
+            discount: data.discount || 0,
+            extra: data.extra || 0,
+            mainCategoryId: data.mainCategoryId || (data.mainCategory === "OTHER" ? "cat_other" : "cat_genz"),
+            subCategory: data.subCategory || data.category || "",
+            inStock: data.inStock !== false
+          });
+        });
         if (window.updateProductsFromFirebase) window.updateProductsFromFirebase(list);
       } catch(e) { console.error(e); }
     }
 
-    window.saveOrderToFirebase = async function(orderData) { try { await addDoc(collection(db, "orders"), { ...orderData, timestamp: new Date() }); return true; } catch (e) { alert("Order save error: " + e.message); return false; } };
-    window.fetchOrdersFromFirebase = async function() { try { const snap = await getDocs(collection(db, "orders")); const list = []; snap.forEach(d => list.push({ id: d.id, ...d.data() })); list.sort((a,b) => b.timestamp - a.timestamp); if (window.renderAdminOrders) window.renderAdminOrders(list); } catch (e) { console.error("Fetch orders error:", e); } };
-    window.updateOrderStatusInFirebase = async function(id, status) { try { await updateDoc(doc(db, "orders", id), { status }); } catch(e) { console.error(e); } };
-    window.deleteOrderFromFirebase = async function(id) { try { await deleteDoc(doc(db, "orders", id)); } catch(e) { console.error(e); } };
-    fetchSettings(); fetchProducts(); window.fetchOrdersFromFirebase();
-    window.saveCategoriesToFirebase = async function(cats) { try { await setDoc(doc(db, "settings", "storeData"), { mainCategories: cats }, { merge: true }); } catch(e) {} };
+    window.saveOrderToFirebase = async function(orderData) {
+      try { await addDoc(collection(db, "orders"), { ...orderData, timestamp: new Date() }); return true; } catch (e) { alert("Order save error: " + e.message); return false; }
+    };
+
+    window.fetchOrdersFromFirebase = async function() {
+      try {
+        const snap = await getDocs(collection(db, "orders"));
+        const list = [];
+        snap.forEach(d => list.push({ id: d.id, ...d.data() }));
+        list.sort((a,b) => b.timestamp - a.timestamp);
+        if (window.renderAdminOrders) window.renderAdminOrders(list);
+      } catch (e) { console.error("Fetch orders error:", e); }
+    };
+
+    window.updateOrderStatusInFirebase = async function(id, status) {
+      try { await updateDoc(doc(db, "orders", id), { status }); } catch(e) { console.error(e); }
+    };
     
+    window.deleteOrderFromFirebase = async function(id) {
+      try { await deleteDoc(doc(db, "orders", id)); } catch(e) { console.error(e); }
+    };
+
+    fetchSettings(); fetchProducts(); window.fetchOrdersFromFirebase();
+
+    window.saveCategoriesToFirebase = async function(cats) {
+      try { await setDoc(doc(db, "settings", "storeData"), { mainCategories: cats }, { merge: true }); } catch(e) {}
+    };
+
     window.deleteProductFromFirebase = async function(id) {
       try { 
         const productSnap = await getDoc(doc(db, "products", id));
         if (productSnap.exists()) {
-            const data = productSnap.data(); let imgUrls = []; if(Array.isArray(data.imageUrl)) { imgUrls = data.imageUrl; } else if(data.imageUrl) { imgUrls = [data.imageUrl]; }
+            const data = productSnap.data();
+            let imgUrls = [];
+            if(Array.isArray(data.imageUrl)) { imgUrls = data.imageUrl; }
+            else if(data.imageUrl) { imgUrls = [data.imageUrl]; }
             for (const url of imgUrls) {
                if (url.includes("firebasestorage.googleapis.com")) {
-                  try { const storageRef = ref(storage, url); await deleteObject(storageRef); } catch (imgError) { console.error("Failed to delete image:", imgError); }
+                  try {
+                      const storageRef = ref(storage, url);
+                      await deleteObject(storageRef);
+                      console.log("Deleted image from storage:", url);
+                  } catch (imgError) {
+                      console.error("Failed to delete image:", imgError);
+                  }
                }
             }
         }
         await deleteDoc(doc(db, "products", id)); 
-      } catch(e) { console.error("Error deleting product:", e); }
+        console.log("Product completely removed.");
+      } catch(e) {
+          console.error("Error deleting product completely:", e);
+      }
     };
 
-    window.updateProductInFirebase = async function(id, data) { try { await updateDoc(doc(db, "products", id), data); } catch(e) { alert("Error updating product!"); } };
-    
+    window.updateProductInFirebase = async function(id, data) {
+      try { await updateDoc(doc(db, "products", id), data); } catch(e) { alert("Error updating product!"); }
+    };
+
     document.getElementById("addProductBtn").addEventListener("click", async () => {
-      const pName = document.getElementById("pName").value.trim(), rawImage = document.getElementById("pImage").value.trim(), pPrice = document.getElementById("pPrice").value, pDisc = document.getElementById("pDiscount").value, pExtra = document.getElementById("pExtra").value, pCatId = document.getElementById("pMainCat").value, pSubCat = document.getElementById("pSubCat").value || "", pInStock = document.getElementById("pInStock").checked;
+      const pName    = document.getElementById("pName").value.trim();
+      const rawImage = document.getElementById("pImage").value.trim();
+      const pPrice   = document.getElementById("pPrice").value;
+      const pDisc    = document.getElementById("pDiscount").value;
+      const pExtra   = document.getElementById("pExtra").value;
+      const pCatId   = document.getElementById("pMainCat").value;
+      const pSubCat  = document.getElementById("pSubCat").value || "";
+      const pInStock = document.getElementById("pInStock").checked;
+
       const imgArray = rawImage.split(",").map(s => s.trim()).filter(Boolean);
+
       if (!pName || imgArray.length === 0 || !pPrice) { alert("Naam, Image URL(s) aur Price zaroori hain!"); return; }
-      const btn = document.getElementById("addProductBtn"); btn.textContent = "Saving...";
-      try { await addDoc(collection(db, "products"), { name: pName, imageUrl: imgArray, price: Number(pPrice), discount: Number(pDisc) || 0, extra: Number(pExtra) || 0, mainCategoryId: pCatId, subCategory: pSubCat, category: pSubCat, inStock: pInStock, timestamp: new Date() }); alert("Product Live Ho Gaya! 🎉"); ["pName","pImage","pPrice","pDiscount","pExtra"].forEach(id => document.getElementById(id).value = ""); fetchProducts(); } catch(e) {} finally { btn.textContent = "Add Product"; }
+      const btn = document.getElementById("addProductBtn");
+      btn.textContent = "Saving...";
+      try {
+        await addDoc(collection(db, "products"), {
+          name: pName, imageUrl: imgArray, price: Number(pPrice), discount: Number(pDisc) || 0, extra: Number(pExtra) || 0,
+          mainCategoryId: pCatId, subCategory: pSubCat, category: pSubCat, inStock: pInStock, timestamp: new Date()
+        });
+        alert("Product Live Ho Gaya! 🎉");
+        ["pName","pImage","pPrice","pDiscount","pExtra"].forEach(id => document.getElementById(id).value = "");
+        fetchProducts();
+      } catch(e) {}
+      finally { btn.textContent = "Add Product"; }
     });
   </script>
 
