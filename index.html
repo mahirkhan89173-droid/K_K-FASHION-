@@ -125,7 +125,7 @@
 
       <div id="orderPage" class="nav-page hidden">
         <h2 class="page-heading">My Orders</h2>
-        <p class="page-sub">Your recently placed orders will appear here.</p>
+        <p class="page-sub">Click on an order to view full details.</p>
         <div id="myOrdersList" class="orders-list"></div>
       </div>
 
@@ -144,10 +144,22 @@
       <div id="profilePage" class="nav-page hidden">
         <h2 class="page-heading">My Profile</h2>
         <div class="profile-card">
-          <div class="p-avatar">👤</div>
-          <div class="p-status">Signed in as</div>
-          <div id="profileDisplayId" class="p-id">Loading...</div>
+          <div class="p-avatar-wrap" onclick="document.getElementById('profilePicInput').click()">
+            <img id="profileImg" src="https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png" alt="Profile" />
+            <div class="p-avatar-edit">📷</div>
+            <input type="file" id="profilePicInput" accept="image/*" class="hidden" />
+          </div>
           
+          <div class="p-status">Signed in as</div>
+          <div id="profileDisplayName" class="p-name">Loading...</div>
+          <div id="profileDisplayId" class="p-id">Loading...</div>
+          <button id="editProfileBtn" class="btn-outline sm-btn" style="margin-top:10px;">✏️ Edit Name</button>
+          
+          <div class="profile-links" style="margin-top:25px; border-top:1px solid var(--border); padding-top:15px; text-align:left;">
+            <button onclick="switchNav('Contact')" class="p-link-btn">📞 Contact Us <span style="float:right;">→</span></button>
+            <button onclick="switchNav('About')" class="p-link-btn">ℹ️ About K_K Fashion <span style="float:right;">→</span></button>
+          </div>
+
           <button id="profileLogoutBtn" class="btn-outline full" style="margin-top: 25px; padding: 12px; font-size: 15px; border-color: var(--destructive); color: var(--destructive);">
             🚪 Logout Securely
           </button>
@@ -183,6 +195,17 @@
         <span class="nav-text">Profile</span>
       </button>
     </nav>
+  </div>
+
+  <div id="myOrderDetailModal" class="overlay hidden" style="z-index: 150;">
+    <div class="drawer">
+      <div class="drawer-head">
+        <h2>Order Details</h2>
+        <button onclick="document.getElementById('myOrderDetailModal').classList.add('hidden'); document.body.classList.remove('no-scroll');" class="icon-btn">✕</button>
+      </div>
+      <div class="drawer-body" id="myOrderDetailBody">
+         </div>
+    </div>
   </div>
 
   <div id="prodDetail" class="prod-detail hidden">
@@ -540,10 +563,13 @@
     import { getAnalytics }     from "https://www.gstatic.com/firebasejs/12.14.0/firebase-analytics.js";
     import { getFirestore, collection, addDoc, getDocs, doc, deleteDoc, getDoc, setDoc, updateDoc }
       from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
-    import { getStorage, ref, deleteObject } 
+      
+    /* ADDED FIREBASE STORAGE IMPORTS FOR PROFILE PIC UPLOAD */
+    import { getStorage, ref, deleteObject, uploadBytes, getDownloadURL } 
       from "https://www.gstatic.com/firebasejs/12.14.0/firebase-storage.js";
     
-    import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut, signInWithEmailAndPassword, createUserWithEmailAndPassword } 
+    /* ADDED UPDATE PROFILE IMPORT */
+    import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } 
       from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
 
     const firebaseConfig = {
@@ -568,6 +594,13 @@
     window.signOut = signOut;
     window.signInWithEmailAndPassword = signInWithEmailAndPassword;
     window.createUserWithEmailAndPassword = createUserWithEmailAndPassword;
+    window.updateProfile = updateProfile;
+    
+    /* EXPORT STORAGE FUNCTIONS */
+    window.storageObj = storage;
+    window.storageRef = ref;
+    window.uploadBytes = uploadBytes;
+    window.getDownloadURL = getDownloadURL;
 
     async function fetchSettings() {
       try {
@@ -652,9 +685,8 @@
             for (const url of imgUrls) {
                if (url.includes("firebasestorage.googleapis.com")) {
                   try {
-                      const storageRef = ref(storage, url);
-                      await deleteObject(storageRef);
-                      console.log("Deleted image from storage:", url);
+                      const stRef = ref(storage, url);
+                      await deleteObject(stRef);
                   } catch (imgError) {
                       console.error("Failed to delete image:", imgError);
                   }
@@ -662,7 +694,6 @@
             }
         }
         await deleteDoc(doc(db, "products", id)); 
-        console.log("Product completely removed.");
       } catch(e) {
           console.error("Error deleting product completely:", e);
       }
