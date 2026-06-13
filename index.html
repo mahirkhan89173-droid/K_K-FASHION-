@@ -204,7 +204,7 @@
         <button onclick="document.getElementById('myOrderDetailModal').classList.add('hidden'); document.body.classList.remove('no-scroll');" class="icon-btn">✕</button>
       </div>
       <div class="drawer-body" id="myOrderDetailBody">
-         </div>
+      </div>
     </div>
   </div>
 
@@ -563,12 +563,6 @@
     import { getAnalytics }     from "https://www.gstatic.com/firebasejs/12.14.0/firebase-analytics.js";
     import { getFirestore, collection, addDoc, getDocs, doc, deleteDoc, getDoc, setDoc, updateDoc }
       from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
-      
-    /* ADDED FIREBASE STORAGE IMPORTS FOR PROFILE PIC UPLOAD */
-    import { getStorage, ref, deleteObject, uploadBytes, getDownloadURL } 
-      from "https://www.gstatic.com/firebasejs/12.14.0/firebase-storage.js";
-    
-    /* ADDED UPDATE PROFILE IMPORT */
     import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } 
       from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
 
@@ -585,7 +579,6 @@
     const fbApp = initializeApp(firebaseConfig);
     getAnalytics(fbApp);
     const db = getFirestore(fbApp);
-    const storage = getStorage(fbApp);
     
     window.fbAuth = getAuth(fbApp);
     window.GoogleAuthProvider = GoogleAuthProvider;
@@ -595,12 +588,6 @@
     window.signInWithEmailAndPassword = signInWithEmailAndPassword;
     window.createUserWithEmailAndPassword = createUserWithEmailAndPassword;
     window.updateProfile = updateProfile;
-    
-    /* EXPORT STORAGE FUNCTIONS */
-    window.storageObj = storage;
-    window.storageRef = ref;
-    window.uploadBytes = uploadBytes;
-    window.getDownloadURL = getDownloadURL;
 
     async function fetchSettings() {
       try {
@@ -674,29 +661,7 @@
     };
 
     window.deleteProductFromFirebase = async function(id) {
-      try { 
-        const productSnap = await getDoc(doc(db, "products", id));
-        if (productSnap.exists()) {
-            const data = productSnap.data();
-            let imgUrls = [];
-            if(Array.isArray(data.imageUrl)) { imgUrls = data.imageUrl; }
-            else if(data.imageUrl) { imgUrls = [data.imageUrl]; }
-
-            for (const url of imgUrls) {
-               if (url.includes("firebasestorage.googleapis.com")) {
-                  try {
-                      const stRef = ref(storage, url);
-                      await deleteObject(stRef);
-                  } catch (imgError) {
-                      console.error("Failed to delete image:", imgError);
-                  }
-               }
-            }
-        }
-        await deleteDoc(doc(db, "products", id)); 
-      } catch(e) {
-          console.error("Error deleting product completely:", e);
-      }
+      try { await deleteDoc(doc(db, "products", id)); } catch(e) {}
     };
 
     window.updateProductInFirebase = async function(id, data) {
