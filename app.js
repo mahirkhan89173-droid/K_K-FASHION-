@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════
-   K_K FASHION — app.js (FINAL - MOBILE + PWD AUTH & WA HIDDEN)
+   K_K FASHION — app.js (FINAL - BOTTOM NAV + MOBILE AUTH)
 ═══════════════════════════════════════════════════════ */
 
 const load = (k, fb) => { try { const r = localStorage.getItem(k); return r ? JSON.parse(r) : fb; } catch { return fb; } };
@@ -10,6 +10,7 @@ let ADMIN_PIN            = load("admin_pin", "9672");
 let mainCategories       = [];
 let products             = [];
 let cart                 = load("knk_cart", []);
+let myOrders             = load("knk_my_orders", []); // NEW: For User's own orders
 let activeMainCatId      = null;
 let activeSubCat         = "All";
 let editingProductId     = null;
@@ -52,7 +53,6 @@ window.addEventListener("DOMContentLoaded", () => {
     window.onAuthStateChanged(window.fbAuth, (user) => {
       if (user) {
         $("authScreen").classList.add("hidden");
-        $("logoutBtn").classList.remove("hidden"); 
         
         if(!isAppInitialized) {
           showSplashAndStart();
@@ -64,7 +64,6 @@ window.addEventListener("DOMContentLoaded", () => {
         $("authScreen").classList.remove("hidden");
         $("app").classList.add("hidden");
         $("splash").classList.add("hidden");
-        $("logoutBtn").classList.add("hidden");
         if($("waBtn")) $("waBtn").classList.add("hidden"); 
       }
     });
@@ -143,15 +142,93 @@ if($("googleLoginBtn")) {
   };
 }
 
-// Logout Button Click
-if($("logoutBtn")) {
-  $("logoutBtn").onclick = () => {
+// Profile Logout Button Click (Moved from Header)
+if($("profileLogoutBtn")) {
+  $("profileLogoutBtn").onclick = () => {
     if(confirm("Are you sure you want to logout?")) {
       window.signOut(window.fbAuth).then(() => {
          window.location.reload();
       });
     }
   };
+}
+
+/* ════════════════════════════════════
+   BOTTOM NAVIGATION LOGIC
+════════════════════════════════════ */
+window.switchNav = function(tab) {
+  // Update Button States
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  if($("nav"+tab)) $("nav"+tab).classList.add("active");
+  
+  if(tab === 'Order') $("navOrderWrap").classList.add("active");
+  else $("navOrderWrap").classList.remove("active");
+
+  // Hide All Tab Contents
+  $("homeContent").classList.add("hidden");
+  $("contactPage").classList.add("hidden");
+  $("orderPage").classList.add("hidden");
+  $("aboutPage").classList.add("hidden");
+  $("profilePage").classList.add("hidden");
+
+  // Show Active Tab Content
+  if(tab === 'Home') $("homeContent").classList.remove("hidden");
+  if(tab === 'Contact') $("contactPage").classList.remove("hidden");
+  if(tab === 'Order') { $("orderPage").classList.remove("hidden"); renderMyOrders(); }
+  if(tab === 'About') $("aboutPage").classList.remove("hidden");
+  if(tab === 'Profile') { $("profilePage").classList.remove("hidden"); renderProfile(); }
+
+  window.scrollTo(0,0);
+};
+
+// Render User's Orders from LocalStorage
+function renderMyOrders() {
+  const list = $("myOrdersList");
+  if(!myOrders || myOrders.length === 0) {
+    list.innerHTML = `<div style="text-align:center; padding:40px 10px; color:var(--muted);">Aapne abhi tak koi order place nahi kiya hai.</div>`;
+    return;
+  }
+
+  let html = "";
+  myOrders.forEach(o => {
+    const payMode = o.paymentMethod === "COD" ? "Cash on Delivery" : "Prepaid Online";
+    const dateStr = new Date(o.savedAt || Date.now()).toLocaleDateString();
+    
+    let itemsText = o.items.map(i => `${i.product.name} (x${i.qty})`).join("<br>");
+
+    html += `
+    <div class="mo-card">
+      <div class="mo-head">
+        <span style="font-weight:700; color:var(--primary); font-size:15px;">₹${o.totalAmount}</span>
+        <span class="mo-status">Processing</span>
+      </div>
+      <div class="mo-body">
+        <strong>Date:</strong> ${dateStr}<br>
+        <strong>Items:</strong><br><span style="color:var(--muted2);">${itemsText}</span><br><br>
+        <strong>Delivery Address:</strong><br>
+        <span style="color:var(--fg);">${o.name} (${o.mobile})</span><br>
+        <span style="color:var(--muted2);">${o.address}, ${o.state} - ${o.pincode}</span><br>
+        <strong>Mode:</strong> <span style="color:var(--primary);">${payMode}</span>
+      </div>
+    </div>`;
+  });
+  list.innerHTML = html;
+}
+
+// Render Profile Info
+function renderProfile() {
+  const displayObj = $("profileDisplayId");
+  if(window.fbAuth && window.fbAuth.currentUser) {
+     let email = window.fbAuth.currentUser.email || "";
+     // If it's a mobile login, strip the fake domain
+     if(email.includes("@kkfashion.com")) {
+        displayObj.textContent = "+91 " + email.replace("@kkfashion.com","");
+     } else {
+        displayObj.textContent = email;
+     }
+  } else {
+     displayObj.textContent = "Guest User";
+  }
 }
 
 /* ════════════════════════════════════
@@ -637,7 +714,8 @@ $("confirmOrderBtn").onclick = () => {
     amountPaid: amountPaid,
     balanceDue: balanceDue,
     utrNumber: utrValue,
-    status: "Recent" 
+    status: "Recent",
+    savedAt: Date.now() // For local rendering
   };
 
   const btn = $("confirmOrderBtn"); btn.textContent = "Placing Order...";
@@ -646,6 +724,10 @@ $("confirmOrderBtn").onclick = () => {
   if (window.saveOrderToFirebase) {
     window.saveOrderToFirebase(orderData).then(success => {
       if (success) {
+        // Save locally for User's "Order" Tab
+        myOrders.unshift(orderData);
+        save("knk_my_orders", myOrders);
+
         showStep3Success(payMethod, amountPaid, balanceDue);
         if (window.fetchOrdersFromFirebase) window.fetchOrdersFromFirebase();
       } else {
@@ -654,6 +736,9 @@ $("confirmOrderBtn").onclick = () => {
       }
     });
   } else {
+      // Fallback local save
+      myOrders.unshift(orderData);
+      save("knk_my_orders", myOrders);
       showStep3Success(payMethod, amountPaid, balanceDue);
   }
 };
