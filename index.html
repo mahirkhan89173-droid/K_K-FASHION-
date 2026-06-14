@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" id="viewportMeta" />
-  <title>K_K Fashion — Premium Gen-Z Apparel</title>
+  <title>K_K Fashion — Online Clothing Store</title>
   <meta name="google-adsense-account" content="ca-pub-4612907862422691">
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4612907862422691" crossorigin="anonymous"></script>
-  <meta name="description" content="Shop exclusive, premium quality combo apparel for Gen-Z at K_K Fashion." />
+  <meta name="description" content="Shop premium t-shirts, shirts, pants and combos online." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
@@ -17,7 +17,7 @@
     gtag('js', new Date());
     gtag('config', 'G-08325P1W4G');
   </script>
-</head>
+  </head>
 <body>
 
   <div id="authScreen" class="auth-screen hidden">
@@ -28,7 +28,7 @@
       <div class="auth-form">
         <input type="tel" id="authMobile" class="auth-input" placeholder="10-Digit Mobile No." maxlength="10" autocomplete="off" />
         <input type="password" id="authPassword" class="auth-input" placeholder="Password (Min 6 chars)" />
-        <button id="authSubmitBtn" class="btn-primary full auther-submit">Login / Sign Up</button>
+        <button id="authSubmitBtn" class="btn-primary full auth-submit" style="padding: 12px; font-size: 15px; border-radius: 12px; margin-bottom: 5px;">Login / Sign Up</button>
       </div>
 
       <div class="auth-divider"><span>OR</span></div>
@@ -107,16 +107,16 @@
       </div>
 
       <div id="contactPage" class="nav-page hidden">
-        <h2 class="page-heading">Premium Support</h2>
+        <h2 class="page-heading">Contact Us</h2>
         <p class="page-sub">Reach out to K_K Fashion for support, queries or bulk orders.</p>
         
         <div class="contact-cards">
-          <a href="https://wa.me/919950701758?text=Hello%20KK%20Fashion,%20I%20need%20some%20help." target="_blank" class="c-card wa-card premium-link-card">
+          <a href="https://wa.me/919950701758" target="_blank" class="c-card wa-card">
             <div class="c-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg></div>
             <div class="c-info"><span>Chat on WhatsApp</span><strong>K_K Fashion Support</strong></div>
           </a>
           
-          <a href="https://instagram.com/k_k_fashion_332" target="_blank" class="c-card ig-card premium-link-card">
+          <a href="https://instagram.com/k_k_fashion_332" target="_blank" class="c-card ig-card">
             <div class="c-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg></div>
             <div class="c-info"><span>Follow on Instagram</span><strong>@k_k_fashion_332</strong></div>
           </a>
@@ -130,7 +130,7 @@
       </div>
 
       <div id="aboutPage" class="nav-page hidden">
-        <div class="about-wrapper premium-about">
+        <div class="about-wrapper">
           <div class="about-logo">K_K</div>
           <h2 class="about-title">Welcome to K_K Fashion</h2>
           <p class="about-text">
@@ -143,28 +143,27 @@
 
       <div id="profilePage" class="nav-page hidden">
         <h2 class="page-heading">My Profile</h2>
-        <div class="profile-card premium-card">
-          <div class="p-avatar-wrap">
-            <img id="profileImg" src="https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png" alt="Profile" style="cursor:pointer;" />
-            
-            <div class="p-avatar-edit premium-edit-badge" onclick="document.getElementById('profilePicInput').click()">
+        <div class="profile-card">
+          <div class="p-avatar-wrap" onclick="document.getElementById('profilePicInput').click()">
+            <img id="profileImg" src="https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png" alt="Profile" />
+            <div class="p-avatar-edit">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
             </div>
             <input type="file" id="profilePicInput" accept="image/*" class="hidden" />
           </div>
           
-          <div class="p-status">Elite Customer Track</div>
+          <div class="p-status">Signed in as</div>
           <div id="profileDisplayName" class="p-name">Loading...</div>
           <div id="profileDisplayId" class="p-id">Loading...</div>
           
-          <button id="editProfileBtn" class="btn-outline sm-btn" style="margin-top:10px; display: inline-flex; align-items: center; gap: 6px;">
+          <button id="editProfileBtn" class="btn-outline sm-btn" style="margin-top:10px; display:inline-flex; align-items:center; gap:6px; justify-content:center;">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
             Edit Name
           </button>
           
           <div class="profile-links" style="margin-top:25px; border-top:1px solid var(--border); padding-top:15px; text-align:left;">
-            <button onclick="switchNav('Contact')" class="p-link-btn premium-profile-btn">📞 Contact Us <span style="float:right;">→</span></button>
-            <button onclick="switchNav('About')" class="p-link-btn premium-profile-btn">ℹ️ About K_K Fashion <span style="float:right;">→</span></button>
+            <button onclick="switchNav('Contact')" class="p-link-btn">📞 Contact Us <span style="float:right;">→</span></button>
+            <button onclick="switchNav('About')" class="p-link-btn">ℹ️ About K_K Fashion <span style="float:right;">→</span></button>
           </div>
 
           <button id="profileLogoutBtn" class="btn-outline full" style="margin-top: 25px; padding: 12px; font-size: 15px; border-color: var(--destructive); color: var(--destructive);">
@@ -402,20 +401,20 @@
       <div class="checkout-body hidden" id="checkoutStep3" style="text-align: center; padding: 40px 15px;">
         <h2 style="font-family: var(--font-display); color: var(--primary); font-size: 28px; font-weight: 700; line-height: 1.4; margin-bottom: 20px; letter-spacing: 0.02em;">
           CONGRATULATIONS<br/>
-          <span style="font-size: 18px; color: var(--fg); font-family: var(--font-body); display: block; margin-top: 10px;">YOUR ELITE ORDER HAS BEEN SUCCESSFULLY PLACED</span>
+          <span style="font-size: 18px; color: var(--fg); font-family: var(--font-body); display: block; margin-top: 10px;">YOUR ORDER HAS BEEN SUCCESSFULLY PLACED</span>
         </h2>
         
         <div id="successOrderSummary" style="background: var(--card); padding: 14px; border-radius: 12px; border: 1px solid var(--border); text-align: left; margin-bottom: 25px; font-size: 13px; line-height: 1.6;">
         </div>
 
-        <button id="successCloseBtn" class="btn-primary full auth-submit" style="max-width: 220px; margin: 0 auto; display: block;">Continue Elite Shopping</button>
+        <button id="successCloseBtn" class="btn-primary full" style="max-width: 220px; margin: 0 auto; display: block;">Continue Shopping</button>
       </div>
       
       <div class="checkout-footer" id="checkoutFooter">
         <div class="total" id="chkFooterTotalRow" style="margin-bottom:8px;"><span>Order Total:</span><span id="chkTotalAmt">₹0</span></div>
-        <button id="step1NextBtn" class="btn-primary full auther-submit">Save Address & Place Order</button>
-        <button id="step2PayBtn" class="btn-primary full hidden auth-submit">Verify Details & Pay</button>
-        <button id="confirmOrderBtn" class="btn-primary full hidden auth-submit">Verify Payment & Confirm</button>
+        <button id="step1NextBtn" class="btn-primary full">Save Address & Place Order</button>
+        <button id="step2PayBtn" class="btn-primary full hidden">Pay Now</button>
+        <button id="confirmOrderBtn" class="btn-primary full hidden">Verify Payment & Place Order</button>
       </div>
     </div>
   </div>
@@ -428,7 +427,7 @@
       <p>Enter PIN to continue</p>
       <input id="pinInput" type="password" inputmode="numeric" placeholder="••••" class="pin-input" />
       <div id="pinError" class="error hidden">Wrong PIN</div>
-      <button id="pinUnlock" class="btn-primary full auth-submit">Unlock</button>
+      <button id="pinUnlock" class="btn-primary full">Unlock</button>
     </div>
   </div>
 
@@ -465,7 +464,7 @@
         </label>
         <span id="editStockLabel" class="stock-label in">In Stock</span>
       </div>
-      <button id="saveEditBtn" class="btn-primary full auth-submit" style="margin-top:16px;">Save Changes</button>
+      <button id="saveEditBtn" class="btn-primary full" style="margin-top:16px;">Save Changes</button>
     </div>
   </div>
 
@@ -493,7 +492,7 @@
         <div id="catMgmtList"></div>
         <div class="inline-row" style="margin-top:8px;">
           <input id="newCatName" class="field" placeholder="Nai category ka naam (e.g. SUMMER SALE)" />
-          <button id="addCatBtn" class="btn-primary sm-btn auth-submit">+ Add</button>
+          <button id="addCatBtn" class="btn-primary sm-btn">+ Add</button>
         </div>
       </section>
 
@@ -534,7 +533,7 @@
           </label>
           <span id="pStockLabel" class="stock-label in">In Stock</span>
         </div>
-        <button id="addProductBtn" class="btn-primary full auth-submit">Add Product to Collection</button>
+        <button id="addProductBtn" class="btn-primary full">Add Product</button>
       </section>
 
       <section class="card">
@@ -552,7 +551,7 @@
         <p class="section-hint">Apna naya PIN set karein (Kam se kam 4 digit).</p>
         <div class="inline-row" style="margin-top:8px;">
           <input id="newAdminPin" type="number" class="field" placeholder="Naya PIN daalein" />
-          <button id="updatePinBtn" class="btn-primary sm-btn auth-submit">Save PIN</button>
+          <button id="updatePinBtn" class="btn-primary sm-btn">Save PIN</button>
         </div>
       </section>
 
@@ -639,7 +638,7 @@
     }
 
     window.saveOrderToFirebase = async function(orderData) {
-      try { await addDoc(collection(db, "orders"), { ...orderData, timestamp: new Date() }); return true; } catch (e) { alert("Elite Order save error: " + e.message); return false; }
+      try { await addDoc(collection(db, "orders"), { ...orderData, timestamp: new Date() }); return true; } catch (e) { alert("Order save error: " + e.message); return false; }
     };
 
     window.fetchOrdersFromFirebase = async function() {
@@ -649,7 +648,7 @@
         snap.forEach(d => list.push({ id: d.id, ...d.data() }));
         list.sort((a,b) => b.timestamp - a.timestamp);
         if (window.renderAdminOrders) window.renderAdminOrders(list);
-      } catch (e) { console.error("Fetch elite orders error:", e); }
+      } catch (e) { console.error("Fetch orders error:", e); }
     };
 
     window.updateOrderStatusInFirebase = async function(id, status) {
@@ -671,7 +670,7 @@
     };
 
     window.updateProductInFirebase = async function(id, data) {
-      try { await updateDoc(doc(db, "products", id), data); } catch(e) { alert("Error updating premium product!"); }
+      try { await updateDoc(doc(db, "products", id), data); } catch(e) { alert("Error updating product!"); }
     };
 
     document.getElementById("addProductBtn").addEventListener("click", async () => {
@@ -686,25 +685,25 @@
 
       const imgArray = rawImage.split(",").map(s => s.trim()).filter(Boolean);
 
-      if (!pName || imgArray.length === 0 || !pPrice) { alert("Naam, Image URL(s) aur Price zaroori hain premium listing ke liye!"); return; }
+      if (!pName || imgArray.length === 0 || !pPrice) { alert("Naam, Image URL(s) aur Price zaroori hain!"); return; }
       const btn = document.getElementById("addProductBtn");
-      btn.textContent = "Listing...";
+      btn.textContent = "Saving...";
       try {
         await addDoc(collection(db, "products"), {
           name: pName, imageUrl: imgArray, price: Number(pPrice), discount: Number(pDisc) || 0, extra: Number(pExtra) || 0,
           mainCategoryId: pCatId, subCategory: pSubCat, category: pSubCat, inStock: pInStock, timestamp: new Date()
         });
-        alert("Product listed successfully in Elite Collection! 🎉");
+        alert("Product Live Ho Gaya! 🎉");
         ["pName","pImage","pPrice","pDiscount","pExtra"].forEach(id => document.getElementById(id).value = "");
         fetchProducts();
       } catch(e) {}
-      finally { btn.textContent = "Add Product to Collection"; }
+      finally { btn.textContent = "Add Product"; }
     });
   </script>
 
-  <a id="waBtn" href="https://wa.me/919950701758?text=Hello%20KK%20Fashion,%20I%20need%20premium%20assistance." target="_blank" rel="noopener noreferrer" class="whatsapp-float hidden">
+  <a id="waBtn" href="https://wa.me/919950701758?text=Hello%20KK%20Fashion,%20I%20need%20some%20help." target="_blank" rel="noopener noreferrer" class="whatsapp-float hidden">
     <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp" class="whatsapp-icon" />
-    <span class="help-text">Elite Help</span>
+    <span class="help-text">Help</span>
   </a>
 
   <script src="app.js"></script>
