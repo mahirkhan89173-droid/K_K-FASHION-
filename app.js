@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════
-   K_K FASHION — app.js (FINAL)
+   K_K FASHION — app.js (FINAL WITH VTO & UPI DEEP LINKS)
 ═══════════════════════════════════════════════════════ */
 
 const load = (k, fb) => { try { const r = localStorage.getItem(k); return r ? JSON.parse(r) : fb; } catch { return fb; } };
@@ -318,7 +318,6 @@ function renderProfile() {
      imgObj.src = savedPic ? savedPic : "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png";
   }
   
-  // ADMIN PANEL TRIGGER: 10 TAPS ON PROFILE DISPLAY NAME
   if (nameObj && !nameObj.dataset.listenerAttached) {
     nameObj.dataset.listenerAttached = "true";
     let profileTapCount = 0, profileTapTimer = null;
@@ -404,7 +403,6 @@ if($("profilePicInput")) {
   };
 }
 
-// Logo button resets category selection only
 $("logoBtn").onclick = () => { 
   if (mainCategories.length > 0) selectMainCat(mainCategories[0].id); 
 };
@@ -457,6 +455,7 @@ $("searchInput").addEventListener("input", function() {
 });
 $("searchClear").addEventListener("click", () => { $("searchInput").value = ""; $("searchClear").classList.add("hidden"); searchQuery = ""; renderMainCats(); renderSubCats(); renderProducts(); $("searchInput").focus(); });
 
+// 3 BUTTONS ADDED TO PRODUCT CARD
 function renderProducts() {
   const title = $("activeTitle"); let list;
   if (searchQuery) {
@@ -485,15 +484,19 @@ function renderProducts() {
         <div class="name">${p.name}</div>${tag}
         <div class="price-row"><span class="price">₹${price}</span>${p.discount > 0 ? `<span class="strike">₹${p.price}</span><span class="off">${p.discount}% off</span>` : ""}</div>
         <span class="stock-badge ${inStock ? 'in' : 'out'}">${inStock ? '● In Stock' : '● Out of Stock'}</span>
-        <div class="btn-row">
+        
+        <div class="btn-row-3">
           <button class="btn-outline btn-cart-grid" ${!inStock ? 'disabled' : ''}>🛒 Cart</button>
+          <button class="btn-outline btn-check-grid" ${!inStock ? 'disabled' : ''}>🔍 Check</button>
           <button class="btn-primary btn-buy-grid"  ${!inStock ? 'disabled' : ''}>💳 Buy</button>
         </div>
       </div>`;
+    
     el.querySelector("img").onclick = () => openProductDetail(p);
     el.querySelector(".name").onclick = () => openProductDetail(p);
     if (inStock) {
       el.querySelector(".btn-cart-grid").onclick = (e) => { e.stopPropagation(); addToCart(p); };
+      el.querySelector(".btn-check-grid").onclick = (e) => { e.stopPropagation(); openTryOn(p.name, mainImg, p); };
       el.querySelector(".btn-buy-grid").onclick  = (e) => { e.stopPropagation(); directBuyCheckout(p); };
     }
     grid.appendChild(el);
@@ -510,6 +513,7 @@ function openProductDetail(p) {
   
   let images = Array.isArray(p.image) ? p.image : [p.image];
   if(images.length === 0) images = ["placeholder.jpg"];
+  const mainImgUrl = images[0];
 
   images.forEach((imgUrl, i) => {
     const imgEl = document.createElement("img");
@@ -541,13 +545,19 @@ function openProductDetail(p) {
   $("pdBreadcrumb").textContent = (cat ? cat.name : "") + (p.subCategory ? " › " + p.subCategory : "");
   $("pdName").textContent = p.name; $("pdPrice").textContent = "₹" + price;
   if (p.discount > 0) { $("pdStrike").textContent = "₹" + p.price; $("pdStrike").classList.remove("hidden"); $("pdOff").textContent = p.discount + "% off"; $("pdOff").classList.remove("hidden"); } else { $("pdStrike").classList.add("hidden"); $("pdOff").classList.add("hidden"); }
-  const addBtn = $("pdAddCart"), buyBtn = $("pdBuyNow");
-  addBtn.textContent = "🛒 Add to Cart"; buyBtn.textContent = "💳 Buy Now";
+  
+  const addBtn = $("pdAddCart"), checkBtn = $("pdCheckProduct"), buyBtn = $("pdBuyNow");
+  addBtn.textContent = "🛒 Cart"; buyBtn.textContent = "💳 Buy";
+  
   if (inStock) {
-    addBtn.disabled = false; buyBtn.disabled = false;
-    addBtn.onclick = () => { addToCart(p); addBtn.textContent = "✅ Added!"; setTimeout(() => { addBtn.textContent = "🛒 Add to Cart"; }, 1200); };
+    addBtn.disabled = false; buyBtn.disabled = false; checkBtn.disabled = false;
+    addBtn.onclick = () => { addToCart(p); addBtn.textContent = "✅ Added!"; setTimeout(() => { addBtn.textContent = "🛒 Cart"; }, 1200); };
+    checkBtn.onclick = () => openTryOn(p.name, mainImgUrl, p);
     buyBtn.onclick = () => directBuyCheckout(p);
-  } else { addBtn.disabled = true; buyBtn.disabled = true; addBtn.textContent = "Out of Stock"; buyBtn.textContent = "Out of Stock"; }
+  } else { 
+    addBtn.disabled = true; buyBtn.disabled = true; checkBtn.disabled = true;
+    addBtn.textContent = "Out of Stock"; buyBtn.textContent = "OOS"; 
+  }
   
   renderHorizSections(p);
   $("pdScroll").scrollTop = 0;
@@ -634,6 +644,7 @@ $("cartOverlay").onclick = e => { if (e.target === $("cartOverlay")) { $("cartOv
 $("clearCartBtn").onclick = clearCart;
 
 const UPI_ID = "kkfashion@nyes"; 
+const STORE_NAME = "K_K Fashion"; 
 
 if($("chkUtr")) {
   $("chkUtr").oninput = function() {
@@ -695,6 +706,17 @@ function resetCheckoutUI() {
 function openCheckout() {
   lockScroll(); 
   resetCheckoutUI();
+  
+  const savedUser = load("knk_customer_address", null);
+  if (savedUser) {
+      if($("chkName")) $("chkName").value = savedUser.name || "";
+      if($("chkMobile")) $("chkMobile").value = savedUser.mobile || "";
+      if($("chkAddress")) $("chkAddress").value = savedUser.address || "";
+      if($("chkState")) $("chkState").value = savedUser.state || "";
+      if($("chkPincode")) $("chkPincode").value = savedUser.pincode || "";
+      if($("chkLandmark")) $("chkLandmark").value = savedUser.landmark || "";
+  }
+
   const total = cart.reduce((s, i) => s + finalPrice(i.product) * i.qty, 0);
   $("chkTotalAmt").textContent = "₹" + total;
   $("checkoutOverlay").classList.remove("hidden");
@@ -734,6 +756,9 @@ $("step1NextBtn").onclick = () => {
   const name = $("chkName").value.trim(), mobile = $("chkMobile").value.trim(), address = $("chkAddress").value.trim(), state = $("chkState").value.trim(), pincode = $("chkPincode").value.trim();
   if(!name || !mobile || !address || !state || !pincode) { alert("Kripya sabhi zaroori jankari bharein!"); return; }
   if(mobile.length < 10 || isNaN(mobile)) { alert("Mobile number galat hai!"); return; }
+
+  const landmark = $("chkLandmark").value.trim();
+  save("knk_customer_address", { name, mobile, address, state, pincode, landmark });
 
   $("checkoutStep1").classList.add("hidden");
   $("checkoutStep2").classList.remove("hidden");
@@ -823,6 +848,9 @@ $("step2PayBtn").onclick = () => {
 
   $("checkoutStep2").scrollTop = 0;
 
+  // We are NOT auto-redirecting to UPI app here anymore. 
+  // User will click the specific GPay/PhonePe button inside qrScanSection.
+  
   let timeLeft = 300; 
   const timerDisplay = document.getElementById("paymentTimer");
   
@@ -838,6 +866,40 @@ $("step2PayBtn").onclick = () => {
           timerDisplay.innerText = "Time expired! Kripya page refresh karein.";
           timerDisplay.style.color = "red";
       }
+  }, 1000);
+};
+
+/* ==========================================
+   UPI DEEP LINK PAYMENT LOGIC
+========================================== */
+window.openUpiApp = function(appType) {
+  const amountDisplay = document.getElementById("qrAmountDisplay");
+  if(!amountDisplay) return;
+  
+  let amountStr = amountDisplay.innerText;
+  let amount = amountStr.replace(/[^0-9.]/g, ""); 
+  
+  if(!amount || parseFloat(amount) <= 0) {
+      alert("Amount invalid hai!");
+      return;
+  }
+
+  const upiId = UPI_ID;
+  const mName = STORE_NAME;
+  
+  const standardLink = `upi://pay?pa=${upiId}&pn=${mName}&am=${amount}&cu=INR`;
+  let deepLink = standardLink;
+
+  if(appType === 'gpay') {
+      deepLink = `tez://upi/pay?pa=${upiId}&pn=${mName}&am=${amount}&cu=INR`;
+  } else if (appType === 'phonepe') {
+      deepLink = `phonepe://pay?pa=${upiId}&pn=${mName}&am=${amount}&cu=INR`;
+  }
+
+  window.location.href = deepLink;
+
+  setTimeout(() => {
+      window.location.href = standardLink;
   }, 1000);
 };
 
@@ -1091,6 +1153,206 @@ $("imageViewer").onclick = (e) => {
     $("imageViewer").classList.add("hidden"); 
     preventZoom(); 
   } 
+};
+
+/* ==========================================
+   VIRTUAL TRY-ON (VTO) LOGIC WITH OPENROUTER
+========================================== */
+const OPENROUTER_API_KEY = "APNI_NEW_KEY_YAHAN_DAALO"; 
+let vtoStream = null;
+let vtoDetectionInterval = null;
+let currentProductName = "";
+let currentTryOnProduct = null; 
+
+window.openTryOn = async function(productName, productImageUrl, fullProductObj) {
+  currentProductName = productName;
+  currentTryOnProduct = fullProductObj; 
+
+  document.getElementById("vtoAdvModal").classList.remove("hidden");
+  document.getElementById("vtoCameraScreen").classList.remove("hidden");
+  document.getElementById("vtoResultScreen").classList.add("hidden");
+  document.getElementById("vtoAdvAlert").innerText = "⚠️ Sar se pair tak poora body dikhao!";
+  document.getElementById("vtoAdvAlert").style.color = "#e05555";
+  document.getElementById("vtoCountdown").classList.add("hidden");
+  document.getElementById("vtoStatus").innerText = "Scanning Body...";
+
+  lockScroll();
+
+  try {
+    vtoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+    document.getElementById("vtoAdvVideo").srcObject = vtoStream;
+    startBodyDetection();
+  } catch (err) {
+    alert("Camera access failed! Kripya browser permissions check karein.");
+    closeTryOn();
+  }
+};
+
+function closeTryOn() {
+  if (vtoStream) {
+    vtoStream.getTracks().forEach(track => track.stop());
+    vtoStream = null;
+  }
+  if (vtoDetectionInterval) {
+    clearInterval(vtoDetectionInterval);
+    vtoDetectionInterval = null;
+  }
+  document.getElementById("vtoAdvVideo").srcObject = null;
+  document.getElementById("vtoAdvModal").classList.add("hidden");
+  unlockScroll();
+}
+
+document.getElementById("vtoAdvClose").onclick = closeTryOn;
+
+function startBodyDetection() {
+  const video = document.getElementById("vtoAdvVideo");
+  const canvas = document.getElementById("vtoAdvCanvas");
+  const ctx = canvas.getContext("2d");
+
+  vtoDetectionInterval = setInterval(async () => {
+    if (!video.videoWidth) return;
+
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    const base64Image = canvas.toDataURL("image/jpeg", 0.5);
+
+    try {
+      const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${OPENROUTER_API_KEY}`
+        },
+        body: JSON.stringify({
+          model: "openai/gpt-4o-mini",
+          messages: [
+            {
+              role: "user",
+              content: [
+                { type: "text", text: "Does this image show a complete human body from head to toe? Answer only YES or NO." },
+                { type: "image_url", image_url: { url: base64Image } }
+              ]
+            }
+          ],
+          max_tokens: 10
+        })
+      });
+
+      const data = await response.json();
+      const answer = data.choices[0].message.content.trim().toUpperCase();
+
+      if (answer.includes("YES")) {
+        clearInterval(vtoDetectionInterval);
+        document.getElementById("vtoAdvAlert").innerText = "✅ Perfect! Hold still...";
+        document.getElementById("vtoAdvAlert").style.color = "#4cc968";
+        document.getElementById("vtoStatus").innerText = "Body Detected!";
+        startCountdown(base64Image);
+      } else {
+        document.getElementById("vtoAdvAlert").innerText = "⚠️ Full body nahi dikh rahi, thoda door khado";
+      }
+    } catch (err) {
+      console.error("Vision API Error:", err);
+    }
+  }, 2000); 
+}
+
+function startCountdown(finalBase64Image) {
+  let count = 3;
+  const countEl = document.getElementById("vtoCountdown");
+  countEl.classList.remove("hidden");
+  countEl.innerText = count;
+
+  let timer = setInterval(() => {
+    count--;
+    if (count > 0) {
+      countEl.innerText = count;
+    } else {
+      clearInterval(timer);
+      countEl.classList.add("hidden");
+      document.getElementById("vtoStatus").innerText = "Generating Magic... ✨";
+      generateImage(finalBase64Image);
+    }
+  }, 1000);
+}
+
+async function generateImage(base64Image) {
+  if (vtoStream) {
+    vtoStream.getTracks().forEach(track => track.stop());
+    vtoStream = null;
+  }
+  
+  try {
+    const promptText = `Fashion photography. The person in the reference photo wearing ${currentProductName}. Full body shot. Studio lighting. Premium clothing brand photo. Realistic.`;
+    
+    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${OPENROUTER_API_KEY}`
+      },
+      body: JSON.stringify({
+        model: "black-forest-labs/flux-schnell", 
+        messages: [{ role: "user", content: promptText }]
+      })
+    });
+
+    const data = await response.json();
+    let genContent = data.choices[0].message.content;
+    let imgUrl = "";
+    
+    const urlMatch = genContent.match(/\((https?:\/\/[^\s]+)\)/);
+    if(urlMatch && urlMatch[1]) {
+        imgUrl = urlMatch[1];
+    } else {
+        imgUrl = genContent;
+    }
+
+    showResult(imgUrl || base64Image); 
+
+  } catch (err) {
+    console.error("Generation API Error:", err);
+    alert("Image generate hone mein error aayi. Original image dikha rahe hain.");
+    showResult(base64Image); 
+  }
+}
+
+function showResult(imageUrl) {
+  document.getElementById("vtoCameraScreen").classList.add("hidden");
+  document.getElementById("vtoResultScreen").classList.remove("hidden");
+  document.getElementById("vtoGeneratedImage").src = imageUrl;
+}
+
+document.getElementById("vtoSaveBtn").onclick = () => {
+  const imgSrc = document.getElementById("vtoGeneratedImage").src;
+  const a = document.createElement("a");
+  a.href = imgSrc;
+  a.download = `KK_Fashion_${Date.now()}.jpg`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+};
+
+document.getElementById("vtoShareBtn").onclick = async () => {
+  const imgSrc = document.getElementById("vtoGeneratedImage").src;
+  if (navigator.share) {
+    try {
+      await navigator.share({
+        title: 'My K_K Fashion Try-On',
+        text: `Look at me trying out ${currentProductName} from K_K Fashion!`,
+        url: imgSrc
+      });
+    } catch (err) { console.error("Share failed", err); }
+  } else {
+    alert("Aapka browser Web Share API support nahi karta.");
+  }
+};
+
+document.getElementById("vtoBuyNowBtn").onclick = () => {
+  closeTryOn();
+  if(currentTryOnProduct && typeof directBuyCheckout === 'function') {
+      directBuyCheckout(currentTryOnProduct);
+  }
 };
 
 preventZoom(); 
