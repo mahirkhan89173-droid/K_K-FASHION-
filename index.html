@@ -17,7 +17,7 @@
     gtag('js', new Date());
     gtag('config', 'G-08325P1W4G');
   </script>
-</head>
+  </head>
 <body>
 
   <div id="authScreen" class="auth-screen hidden">
@@ -246,10 +246,9 @@
       <div id="pdHorizSections" class="horiz-sections"></div>
     </div>
 
-    <div class="pd-action-bar" style="display: flex; gap: 8px; padding: 10px 15px;">
-      <button id="pdAddCart" class="btn-outline" style="flex: 1; padding: 12px 5px; font-size: 13px;">🛒 Cart</button>
-      <button id="pdCheckProduct" class="btn-outline" style="flex: 1; padding: 12px 5px; font-size: 13px; border-color: var(--primary); color: var(--primary);">🔍 Check</button>
-      <button id="pdBuyNow" class="btn-primary" style="flex: 1; padding: 12px 5px; font-size: 13px;">💳 Buy</button>
+    <div class="pd-action-bar">
+      <button id="pdAddCart" class="btn-outline">🛒 Add to Cart</button>
+      <button id="pdBuyNow" class="btn-primary">💳 Buy Now</button>
     </div>
   </div>
 
@@ -385,12 +384,7 @@
           <br>
           <img src="62673.png" alt="QR Code" style="width:200px; height:auto; max-height:220px; object-fit:contain; border-radius:8px; margin-bottom:10px; border:2px solid #f0f0f0; padding:5px;" />
           
-          <div class="upi-app-buttons">
-            <button onclick="openUpiApp('gpay')" class="btn-upi gpay-btn">📱 GPay se Pay Karo</button>
-            <button onclick="openUpiApp('phonepe')" class="btn-upi phonepe-btn">☎️ PhonePe se Pay Karo</button>
-          </div>
-
-          <div style="color:#666; font-size:12px; margin-top:15px; margin-bottom:8px; text-transform:uppercase;">Or Pay via UPI ID</div>
+          <div style="color:#666; font-size:12px; margin-bottom:8px; text-transform:uppercase;">Or Pay via UPI ID</div>
           
           <div id="copyUpiBtn" style="font-weight:bold; font-size:15px; color:#333; background:#f9f9f9; padding:8px 15px; border-radius:6px; border:1px dashed #ccc; display:inline-flex; align-items:center; gap:8px; cursor:pointer; margin-bottom:12px; transition:0.3s;">
               kkfashion@nyes <span style="font-size:12px; background:var(--primary); color:#fff; padding:3px 8px; border-radius:4px;">📋 Copy</span>
@@ -567,36 +561,6 @@
   <div id="imageViewer" class="overlay center hidden" style="z-index: 200; background: rgba(0,0,0,0.95);">
     <button id="closeViewerBtn" class="icon-btn close-abs" style="color: #fff; background: rgba(255,255,255,0.2); z-index: 201; top: 16px; right: 16px; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;">✕</button>
     <img id="fullImage" src="" alt="Full View" style="max-width: 100vw; max-height: 100vh; transition: transform 0.3s ease;" />
-  </div>
-
-  <div id="vtoAdvModal" class="overlay center hidden" style="z-index: 250;">
-    <div class="vto-card">
-      <button id="vtoAdvClose" class="icon-btn close-abs">✕</button>
-      <h2 class="vto-title">Virtual Try-On</h2>
-      
-      <div id="vtoCameraScreen">
-        <div id="vtoAdvAlert" class="vto-alert">⚠️ Sar se pair tak poora body dikhao!</div>
-        
-        <div class="vto-video-wrap">
-          <video id="vtoAdvVideo" autoplay playsinline></video>
-          <canvas id="vtoAdvCanvas" class="hidden"></canvas>
-          <div class="vto-guide-frame"></div>
-          <div id="vtoCountdown" class="vto-countdown hidden">3</div>
-        </div>
-        
-        <div id="vtoStatus" class="vto-status">Scanning Body...</div>
-      </div>
-
-      <div id="vtoResultScreen" class="hidden">
-        <img id="vtoGeneratedImage" src="" alt="Try-On Result" />
-        <div class="vto-result-actions">
-          <button id="vtoSaveBtn" class="btn-outline">💾 Save Karo</button>
-          <button id="vtoShareBtn" class="btn-outline">📤 Share</button>
-        </div>
-        <button id="vtoBuyNowBtn" class="btn-primary full" style="margin-top:10px;">💳 Buy Now</button>
-      </div>
-      
-    </div>
   </div>
 
   <script type="module">
